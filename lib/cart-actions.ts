@@ -1,0 +1,148 @@
+'use server';
+
+import { revalidatePath } from 'next/cache';
+import { supabaseAdmin, supabaseServer } from './supabase/server';
+import { getReservationsForProductIds, getSizeAvailabilityForRange as _getSizeAvailabilityForRange, getSizeAvailabilityByNames as _getSizeAvailabilityByNames, type SizeOption } from './queries';
+import { expandUnavailableDates } from './domain/reservation';
+
+export interface CartLine {
+  id: string;        // cart_item id
+  productId: string;
+  name: string;
+  size: string;
+  dailyPrice: number;
+  deposit: number;
+  c1: string;
+  c2: string;
+}
+
+/** 현재 로그인 사용자의 customer.id 를 찾거나 생성 */
+async function resolveCustomerId(): Promise<string | null> {
+  const { data: { user } } = await supabaseServer().auth.getUser();
+  if (!user) return null;
+
+  const sb = supabaseAdmin();
+  const { data: existing } = await sb
+    .from('customer').select('id').eq('auth_user_id', user.id).maybeSingle();
+  if (existing) return existing.id;
+
+  const name = (user.user_metadata?.name as string) || '고객';
+  const phone = (user.user_metadata?.phone as string) || null;
+  // status를 컬럼 기본값에 맡기지 않고 명시적으로 지정(마이그레이션 순서와 무관하게 항상 결제 전 상태로 생성)
+  const { data: created, error } = await sb
+    .from('customer').insert({ auth_user_id: user.id, name, phone, status: 'unpaid' }).select('id').single();
+  if (error) return null;
+  return created.id;
+}
+
+export async function addCartItem(
+  productId: string,
+): Promise<{ ok: true } | { ok: false; reason: string; needLogin?: boolean }> {
+  const customerId = await resolveCustomerId();
+  if (!customerId) return { ok: false, reason: '장바구니에 담으려면 로그인이 필요합니다.', needLogin: true };
+
+  const sb = supabaseAdmin();
+  const { error } = await sb.from('cart_item').insert({ customer_id: customerId, product_id: productId });
+  // 이미 담긴 상품이면(unique 위반) 무시
+  if (error && !/duplicate|unique/i.test(error.message)) {
+    return { ok: false, reason: '장바구니 저장에 실패했습니다.' };
+  }
+  revalidatePath('/cart');
+  return { ok: true };
+}
+
+export async function getCartItems(): Promise<CartLine[]> {
+  const customerId = await resolveCustomerId();
+  if (!customerId) return [];
+
+  const sb = supabaseAdmin();
+  const { data, error } = await sb
+    .from('cart_item')
+    .select('id,product:product_id(id,name,size,daily_price,deposit,color_1,color_2)')
+    .eq('customer_id', customerId)
+    .order('created_at', { ascending: true });
+  if (error || !data) return [];
+
+  return (data as unknown as {
+    id: string;
+    product: { id: string; name: string; size: string; daily_price: number; deposit: number; color_1: string | null; color_2: string | null };
+  }[]).map((r) => ({
+    id: r.id,
+    productId: r.product.id,
+    name: r.product.name,
+    size: r.product.size,
+    dailyPrice: r.product.daily_price,
+    deposit: r.product.deposit,
+    c1: r.product.color_1 ?? '#3B2230',
+    c2: r.product.color_2 ?? '#6B2737',
+  }));
+}
+
+export async function removeCartItem(id: string): Promise<{ ok: boolean }> {
+  const customerId = await resolveCustomerId();
+  if (!customerId) return { ok: false };
+  const sb = supabaseAdmin();
+  await sb.from('cart_item').delete().eq('id', id).eq('customer_id', customerId);
+  revalidatePath('/cart');
+  return { ok: true };
+}
+
+/**
+ * 지금 내 카트에 있는 상품(productId)들 중, 다른 회원의 카트에도 동시에 담겨 있는 것들을 찾는다.
+ * 빠른 결제를 유도하기 위해 카트 페이지에 "다른 회원님의 카트에도 담겨 있어요" 안내로 사용.
+ */
+export async function getOtherCartConflicts(productIds: string[]): Promise<Set<string>> {
+  const customerId = await resolveCustomerId();
+  if (!customerId || productIds.length === 0) return new Set();
+  const sb = supabaseAdmin();
+  const { data } = await sb
+    .from('cart_item')
+    .select('product_id')
+    .in('product_id', productIds)
+    .neq('customer_id', customerId);
+  return new Set((data ?? []).map((r: { product_id: string }) => r.product_id));
+}
+
+/** 카트에 담긴 아이템을 같은 스타일의 다른 사이즈(productId)로 교체 */
+export async function swapCartItemSize(cartItemId: string, newProductId: string): Promise<{ ok: boolean; reason?: string }> {
+  const customerId = await resolveCustomerId();
+  if (!customerId) return { ok: false, reason: '로그인이 필요합니다.' };
+  const sb = supabaseAdmin();
+
+  const { error } = await sb
+    .from('cart_item')
+    .update({ product_id: newProductId })
+    .eq('id', cartItemId)
+    .eq('customer_id', customerId);
+
+  if (error) {
+    // 이미 그 사이즈가 카트에 따로 담겨 있으면(unique 위반) 지금 것만 지움
+    if (/duplicate|unique/i.test(error.message)) {
+      await sb.from('cart_item').delete().eq('id', cartItemId).eq('customer_id', customerId);
+      revalidatePath('/cart');
+      return { ok: true };
+    }
+    return { ok: false, reason: '사이즈 변경에 실패했습니다.' };
+  }
+  revalidatePath('/cart');
+  return { ok: true };
+}
+
+/** 클라이언트 컴포넌트(카트 페이지)에서 호출하기 위한 서버 액션 래퍼 */
+export async function getSizeAvailabilityForRange(
+  names: string[], checkout: string, returnDate: string,
+): Promise<Record<string, SizeOption[]>> {
+  return _getSizeAvailabilityForRange(names, checkout, returnDate);
+}
+
+/** 날짜 선택 전 기본(지금 재고 기준) 사이즈 옵션 — 카트에 담긴 사이즈를 예약일 선택 전에도 보여주기 위함 */
+export async function getSizeAvailabilityByNames(names: string[]): Promise<Record<string, SizeOption[]>> {
+  return _getSizeAvailabilityByNames(names);
+}
+
+/** 카트에 담긴 모든 상품의 예약을 합친 "예약 불가 날짜"(YYYY-MM-DD) 목록 */
+export async function getCartBusyDates(): Promise<string[]> {
+  const items = await getCartItems();
+  const reservations = await getReservationsForProductIds(items.map((i) => i.productId));
+  return Array.from(expandUnavailableDates(reservations));
+}
