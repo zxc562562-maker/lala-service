@@ -6,7 +6,8 @@ import Link from 'next/link';
 import { supabaseBrowser } from '@lala/shared/lib/supabase/client';
 import { registerMembership, isUsernameAvailable } from '@lala/shared/lib/roles-actions';
 import { createAccountById } from '@/lib/auth-actions';
-import { idToAuthEmail, isValidUsername, isValidPassword } from '@/lib/username';
+import { isValidUsername, isValidPassword } from '@/lib/username';
+import { idToAuthEmail } from '@lala/shared/lib/username';
 import { TERMS_OF_SERVICE, PRIVACY_POLICY, MARKETING_CONSENT_DETAIL } from '@/lib/legal-content';
 import { checkPhoneVerifyRateLimit } from '@/lib/phone-verify-actions';
 

@@ -1,7 +1,7 @@
 'use server';
 
 import { supabaseAdmin } from '@lala/shared/lib/supabase/server';
-import { idToAuthEmail } from './username';
+import { idToAuthEmail } from '@lala/shared/lib/username';
 
 /**
  * ID(가상 이메일) 기반 회원가입.
