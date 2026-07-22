@@ -66,8 +66,8 @@ function WheelColumn({ items, value, suffix, onChange }: {
 function YearMonthWheel({ month, onChange }: { month: Date; onChange: (next: Date) => void }) {
   const year = month.getUTCFullYear();
   const mon = month.getUTCMonth() + 1;
-  const nowY = todayUTC().getUTCFullYear();
-  const years = Array.from({ length: 8 }, (_, i) => nowY - 5 + i);
+  // 2026년 이전은 조회할 일이 없어서 휠 시작점을 2026으로 고정
+  const years = Array.from({ length: 8 }, (_, i) => 2026 + i);
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
 
   return (
