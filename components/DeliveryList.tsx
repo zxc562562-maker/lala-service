@@ -2,9 +2,9 @@
 
 import { useEffect, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabaseBrowser } from '@/lib/supabase/client';
-import { updateFulfillment, type OrderRow, type Fulfillment } from '@/lib/staff-actions';
-import { getDeliverySlotLabel } from '@/lib/delivery';
+import { supabaseBrowser } from '@lala/shared/lib/supabase/client';
+import { updateFulfillment, type OrderRow, type Fulfillment } from '@lala/shared/lib/staff-actions';
+import { getDeliverySlotLabel } from '@lala/shared/lib/delivery';
 
 const LABEL: Record<Fulfillment, string> = {
   ORDERED: '주문결제', PRE_INSPECTING: '상품검수중', READY: '배송대기중', SHIPPED: '배송중',

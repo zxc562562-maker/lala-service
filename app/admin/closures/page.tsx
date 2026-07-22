@@ -1,4 +1,4 @@
-import { listClosuresAdmin } from '@/lib/closure-actions';
+import { listClosuresAdmin } from '@lala/shared/lib/closure-actions';
 import AdminClosures from '@/components/AdminClosures';
 
 export const dynamic = 'force-dynamic';

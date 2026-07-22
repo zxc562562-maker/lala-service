@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { saveReturnTracking } from '@/lib/staff-actions';
+import { saveReturnTracking } from '@lala/shared/lib/staff-actions';
 
 export default function ReturnTrackingAdminForm({
   orderId, initialCourier, initialTrackingNumber,

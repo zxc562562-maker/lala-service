@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { LOOKS } from '@/lib/looks';
 import { addCartItem } from '@/lib/cart-actions';
-import type { Product } from '@/lib/types';
+import type { Product } from '@lala/shared/lib/types';
 import type { SizeOption } from '@/lib/queries';
 
 type ViewMode = 'single' | 'triple' | 'products';

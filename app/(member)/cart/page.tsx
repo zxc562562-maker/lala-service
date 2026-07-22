@@ -4,10 +4,10 @@ import { useEffect, useRef, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getCartItems, getCartBusyDates, removeCartItem, getOtherCartConflicts, type CartLine } from '@/lib/cart-actions';
-import { iso, toDate, addDays, todayISO, billableDays } from '@/lib/domain/reservation';
+import { iso, toDate, addDays, todayISO, billableDays } from '@lala/shared/lib/domain/reservation';
 import { FLAT_DEPOSIT, PARCEL_ROUNDTRIP_FEE, QUICK_DELIVERY_FEE } from '@/lib/pricing';
-import { DELIVERY_SLOTS, DELIVERY_METHODS } from '@/lib/delivery';
-import { getClosedDates } from '@/lib/closure-actions';
+import { DELIVERY_SLOTS, DELIVERY_METHODS } from '@lala/shared/lib/delivery';
+import { getClosedDates } from '@lala/shared/lib/closure-actions';
 import { getProfile, type Profile } from '@/lib/account-actions';
 import DeliveryInfoForm, { type DeliveryInfoFormHandle } from '@/components/DeliveryInfoForm';
 

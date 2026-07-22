@@ -1,14 +1,14 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { supabaseAdmin, supabaseServer } from './supabase/server';
+import { supabaseAdmin, supabaseServer } from '@lala/shared/lib/supabase/server';
 import { getCartItems } from './cart-actions';
-import { tossConfirm, tossCancel, finalizeOrderById } from './payments';
+import { tossConfirm, tossCancel, finalizeOrderById } from '@lala/shared/lib/payments';
 import { FLAT_DEPOSIT, PARCEL_ROUNDTRIP_FEE, QUICK_DELIVERY_FEE } from './pricing';
-import { isValidDeliverySlot, isValidDeliveryMethod } from './delivery';
-import { getClosedDates } from './closure-actions';
-import { billableDays } from './domain/reservation';
-import { sendPushToCustomer } from './push';
+import { isValidDeliverySlot, isValidDeliveryMethod } from '@lala/shared/lib/delivery';
+import { getClosedDates } from '@lala/shared/lib/closure-actions';
+import { billableDays } from '@lala/shared/lib/domain/reservation';
+import { sendPushToCustomer } from '@lala/shared/lib/push';
 
 // 배송(SHIPPED) 시작 전까지만 고객이 직접 취소·전액 환불할 수 있다.
 const CANCELLABLE_FULFILLMENT_STATUSES = ['ORDERED', 'PRE_INSPECTING', 'READY'];

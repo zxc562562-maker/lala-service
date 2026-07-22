@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { supabaseServer } from '@/lib/supabase/server';
-import { getCachedUser } from '@/lib/auth-cache';
+import { supabaseServer } from '@lala/shared/lib/supabase/server';
+import { getCachedUser } from '@lala/shared/lib/auth-cache';
 import AccountDateFilter from '@/components/AccountDateFilter';
 import AccountOrderCard from '@/components/AccountOrderCard';
-import { DELIVERY_METHODS } from '@/lib/delivery';
+import { DELIVERY_METHODS } from '@lala/shared/lib/delivery';
 
 export const dynamic = 'force-dynamic';
 const won = (n: number) => n.toLocaleString('ko-KR') + '원';

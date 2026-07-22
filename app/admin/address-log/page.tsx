@@ -1,4 +1,4 @@
-import { listAddressChanges } from '@/lib/staff-actions';
+import { listAddressChanges } from '@lala/shared/lib/staff-actions';
 import AdminAddressLog from '@/components/AdminAddressLog';
 
 export const dynamic = 'force-dynamic';

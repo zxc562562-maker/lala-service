@@ -1,4 +1,4 @@
-import { listOrders } from '@/lib/staff-actions';
+import { listOrders } from '@lala/shared/lib/staff-actions';
 import DeliveryList from '@/components/DeliveryList';
 
 export const dynamic = 'force-dynamic';

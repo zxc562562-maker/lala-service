@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { signOut } from '@/lib/actions';
-import { getAccess } from '@/lib/roles';
+import { getAccess } from '@lala/shared/lib/roles';
 
 export const dynamic = 'force-dynamic';
 

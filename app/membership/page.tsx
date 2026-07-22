@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { getAccess } from '@/lib/roles';
+import { getAccess } from '@lala/shared/lib/roles';
 import MembershipPayment from '@/components/MembershipPayment';
 
 export const dynamic = 'force-dynamic';

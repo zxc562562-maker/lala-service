@@ -1,8 +1,8 @@
 'use server';
 
-import { supabaseServer, supabaseAdmin } from './supabase/server';
-import { getCachedUser } from './auth-cache';
-import { sendPushToCustomer } from './push';
+import { supabaseServer, supabaseAdmin } from '@lala/shared/lib/supabase/server';
+import { getCachedUser } from '@lala/shared/lib/auth-cache';
+import { sendPushToCustomer } from '@lala/shared/lib/push';
 
 export interface Profile {
   username: string;

@@ -2,7 +2,7 @@ import { notFound, redirect } from 'next/navigation';
 import { getLook, getLookImages } from '@/lib/looks';
 import { getProductsByNames, getSizeAvailabilityByNames } from '@/lib/queries';
 import { getCartItems } from '@/lib/cart-actions';
-import { getCachedUser } from '@/lib/auth-cache';
+import { getCachedUser } from '@lala/shared/lib/auth-cache';
 import LookItems from '@/components/LookItems';
 import LookGallery from '@/components/LookGallery';
 

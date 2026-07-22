@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { getAccess } from '@/lib/roles';
+import { getAccess } from '@lala/shared/lib/roles';
 
 export const dynamic = 'force-dynamic';
 

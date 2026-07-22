@@ -2,8 +2,8 @@
 
 import { useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabaseBrowser } from '@/lib/supabase/client';
-import { approveMember, rejectMember, type PendingMember } from '@/lib/roles-actions';
+import { supabaseBrowser } from '@lala/shared/lib/supabase/client';
+import { approveMember, rejectMember, type PendingMember } from '@lala/shared/lib/roles-actions';
 
 export default function AdminApprovals({ pending }: { pending: PendingMember[] }) {
   const router = useRouter();

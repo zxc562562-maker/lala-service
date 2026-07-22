@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabaseBrowser } from '@/lib/supabase/client';
-import { listAddressChanges, type AddressChangeRow } from '@/lib/staff-actions';
+import { supabaseBrowser } from '@lala/shared/lib/supabase/client';
+import { listAddressChanges, type AddressChangeRow } from '@lala/shared/lib/staff-actions';
 
 export default function AdminAddressLog({ initial }: { initial: AddressChangeRow[] }) {
   const [rows, setRows] = useState<AddressChangeRow[]>(initial);

@@ -1,7 +1,7 @@
 'use server';
 
-import { supabaseAdmin } from './supabase/server';
-import { getAccess } from './roles';
+import { supabaseAdmin } from '@lala/shared/lib/supabase/server';
+import { getAccess } from '@lala/shared/lib/roles';
 import { isWithinAllowedSendingHours, nextAllowedSendTime, sendBroadcastNow } from './marketing-send';
 
 export type MarketingCategory = 'lookbook' | 'promotion' | 'daily';

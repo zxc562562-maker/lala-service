@@ -1,6 +1,6 @@
 'use server';
 
-import { supabaseAdmin } from './supabase/server';
+import { supabaseAdmin } from '@lala/shared/lib/supabase/server';
 import { idToAuthEmail } from './username';
 
 /**

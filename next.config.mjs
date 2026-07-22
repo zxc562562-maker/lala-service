@@ -6,5 +6,6 @@ const nextConfig = {
       bodySizeLimit: '10mb',
     },
   },
+  transpilePackages: ['@lala/shared'],
 };
 export default nextConfig;

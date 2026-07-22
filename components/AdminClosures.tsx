@@ -2,9 +2,9 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { addClosureRange, removeClosureDate, type ClosureDay } from '@/lib/closure-actions';
-import { KOREAN_HOLIDAYS } from '@/lib/holidays';
-import { todayISO } from '@/lib/domain/reservation';
+import { addClosureRange, removeClosureDate, type ClosureDay } from '@lala/shared/lib/closure-actions';
+import { KOREAN_HOLIDAYS } from '@lala/shared/lib/holidays';
+import { todayISO } from '@lala/shared/lib/domain/reservation';
 
 export default function AdminClosures({ closures }: { closures: ClosureDay[] }) {
   const router = useRouter();

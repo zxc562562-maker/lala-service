@@ -1,8 +1,8 @@
 import { unstable_cache } from 'next/cache';
-import { supabaseAdmin } from './supabase/server';
-import type { Product } from './types';
-import type { Reservation } from './domain/reservation';
-import type { InventoryItem, ItemStatus } from './domain/inventory';
+import { supabaseAdmin } from '@lala/shared/lib/supabase/server';
+import type { Product } from '@lala/shared/lib/types';
+import type { Reservation } from '@lala/shared/lib/domain/reservation';
+import type { InventoryItem, ItemStatus } from '@lala/shared/lib/domain/inventory';
 
 // ---- DB row → 도메인 타입 매핑 ----
 type ProductRow = {

@@ -1,8 +1,8 @@
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
-import { supabaseServer } from '@/lib/supabase/server';
-import { getCachedUser } from '@/lib/auth-cache';
-import { getPackagingPhotoUrl } from '@/lib/storage';
+import { supabaseServer } from '@lala/shared/lib/supabase/server';
+import { getCachedUser } from '@lala/shared/lib/auth-cache';
+import { getPackagingPhotoUrl } from '@lala/shared/lib/storage';
 import PackagingPhotoLightbox from '@/components/PackagingPhotoLightbox';
 
 export const dynamic = 'force-dynamic';

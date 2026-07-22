@@ -1,7 +1,7 @@
 import 'server-only';
-import { supabaseAdmin } from './supabase/server';
-import { tossConfirm, tossGetPayment } from './payments';
-import { sendPushToCustomer } from './push';
+import { supabaseAdmin } from '@lala/shared/lib/supabase/server';
+import { tossConfirm, tossGetPayment } from '@lala/shared/lib/payments';
+import { sendPushToCustomer } from '@lala/shared/lib/push';
 
 export { tossConfirm, tossGetPayment };
 

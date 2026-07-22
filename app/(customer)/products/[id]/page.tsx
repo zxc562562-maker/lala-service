@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
 import { getProduct, getSizeAvailabilityByNames } from '@/lib/queries';
 import { getCartItems } from '@/lib/cart-actions';
-import { getCachedUser } from '@/lib/auth-cache';
+import { getCachedUser } from '@lala/shared/lib/auth-cache';
 import ProductStickyBar from '@/components/ProductStickyBar';
 
 export const dynamic = 'force-dynamic';

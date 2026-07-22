@@ -1,6 +1,6 @@
 'use server';
 
-import { supabaseServer, supabaseAdmin } from './supabase/server';
+import { supabaseServer, supabaseAdmin } from '@lala/shared/lib/supabase/server';
 
 export interface PushSubscriptionInput {
   endpoint: string;

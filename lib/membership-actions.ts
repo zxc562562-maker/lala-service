@@ -1,8 +1,8 @@
 'use server';
 
-import { supabaseAdmin, supabaseServer } from './supabase/server';
+import { supabaseAdmin, supabaseServer } from '@lala/shared/lib/supabase/server';
 import { tossConfirm, finalizeMembershipById } from './membership';
-import { sendPushToCustomer } from './push';
+import { sendPushToCustomer } from '@lala/shared/lib/push';
 import { MEMBERSHIP_FEE } from './pricing';
 
 /** 현재 로그인 사용자의 customer 행을 찾는다(역할 무관, 상태 무관). */

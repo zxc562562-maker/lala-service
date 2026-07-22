@@ -2,9 +2,9 @@
 
 import { useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabaseBrowser } from '@/lib/supabase/client';
-import { updateFulfillment, assignOrder, openDispute, resolveDispute, setItemIssue, type OrderRow, type Fulfillment } from '@/lib/staff-actions';
-import { getDeliverySlotLabel } from '@/lib/delivery';
+import { supabaseBrowser } from '@lala/shared/lib/supabase/client';
+import { updateFulfillment, assignOrder, openDispute, resolveDispute, setItemIssue, type OrderRow, type Fulfillment } from '@lala/shared/lib/staff-actions';
+import { getDeliverySlotLabel } from '@lala/shared/lib/delivery';
 import ReturnTrackingAdminForm from './ReturnTrackingAdminForm';
 import PackagingPhotoAdminForm from './PackagingPhotoAdminForm';
 

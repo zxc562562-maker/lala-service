@@ -1,6 +1,6 @@
 import { type EmailOtpType } from '@supabase/supabase-js';
 import { type NextRequest, NextResponse } from 'next/server';
-import { supabaseServer } from '@/lib/supabase/server';
+import { supabaseServer } from '@lala/shared/lib/supabase/server';
 
 /**
  * 가입 확인 메일의 링크가 도착하는 곳.

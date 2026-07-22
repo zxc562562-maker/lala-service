@@ -3,9 +3,9 @@
 import { Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { supabaseBrowser } from '@/lib/supabase/client';
+import { supabaseBrowser } from '@lala/shared/lib/supabase/client';
 import { idToAuthEmail } from '@/lib/username';
-import { getMyAccess } from '@/lib/roles-actions';
+import { getMyAccess } from '@lala/shared/lib/roles-actions';
 
 function LoginForm() {
   const params = useSearchParams();

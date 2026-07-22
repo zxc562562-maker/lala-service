@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { getCachedUser } from '@/lib/auth-cache';
+import { getCachedUser } from '@lala/shared/lib/auth-cache';
 
 export const dynamic = 'force-dynamic';
 

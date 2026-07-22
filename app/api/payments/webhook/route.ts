@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase/server';
-import { tossGetPayment, finalizeOrderById } from '@/lib/payments';
+import { supabaseAdmin } from '@lala/shared/lib/supabase/server';
+import { tossGetPayment, finalizeOrderById } from '@lala/shared/lib/payments';
 import { finalizeMembershipById } from '@/lib/membership';
 
 // 토스페이먼츠 웹훅 (상점관리자 > 웹훅에 이 URL 등록: https://<도메인>/api/payments/webhook)

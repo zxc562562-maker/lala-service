@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { toDate, iso, addDays } from '@/lib/domain/reservation';
+import { toDate, iso, addDays } from '@lala/shared/lib/domain/reservation';
 
 const WHEEL_ITEM_H = 15;
 

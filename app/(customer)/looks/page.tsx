@@ -1,5 +1,5 @@
 import LookGrid from '@/components/LookGrid';
-import { getCachedUser } from '@/lib/auth-cache';
+import { getCachedUser } from '@lala/shared/lib/auth-cache';
 import { getProducts, getSizeAvailabilityByNames } from '@/lib/queries';
 import { getCartItems } from '@/lib/cart-actions';
 

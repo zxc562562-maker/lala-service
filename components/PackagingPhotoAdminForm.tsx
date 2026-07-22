@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { savePackagingPhoto } from '@/lib/staff-actions';
+import { savePackagingPhoto } from '@lala/shared/lib/staff-actions';
 
 export default function PackagingPhotoAdminForm({
   orderId, photoUrl,

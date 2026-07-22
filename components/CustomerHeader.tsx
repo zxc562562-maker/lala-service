@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { getCachedUser } from '@/lib/auth-cache';
+import { getCachedUser } from '@lala/shared/lib/auth-cache';
 import { signOut } from '@/lib/actions';
 
 export default async function CustomerHeader() {

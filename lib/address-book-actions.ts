@@ -1,8 +1,8 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { supabaseAdmin } from './supabase/server';
-import { getCachedUser } from './auth-cache';
+import { supabaseAdmin } from '@lala/shared/lib/supabase/server';
+import { getCachedUser } from '@lala/shared/lib/auth-cache';
 
 export type DeliveryMode = 'home' | 'workplace' | 'pickup';
 

@@ -1,4 +1,4 @@
-import { listPendingMembers } from '@/lib/roles-actions';
+import { listPendingMembers } from '@lala/shared/lib/roles-actions';
 import AdminApprovals from '@/components/AdminApprovals';
 
 export const dynamic = 'force-dynamic';

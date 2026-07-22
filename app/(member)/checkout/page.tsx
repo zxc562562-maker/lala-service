@@ -4,7 +4,7 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { loadTossPayments } from '@tosspayments/tosspayments-sdk';
 import { createOrder } from '@/lib/payments-actions';
-import { isValidDeliverySlot, isValidDeliveryMethod } from '@/lib/delivery';
+import { isValidDeliverySlot, isValidDeliveryMethod } from '@lala/shared/lib/delivery';
 
 const won = (n: number) => n.toLocaleString('ko-KR') + '원';
 

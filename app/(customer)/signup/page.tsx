@@ -3,8 +3,8 @@
 import { Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { supabaseBrowser } from '@/lib/supabase/client';
-import { registerMembership, isUsernameAvailable } from '@/lib/roles-actions';
+import { supabaseBrowser } from '@lala/shared/lib/supabase/client';
+import { registerMembership, isUsernameAvailable } from '@lala/shared/lib/roles-actions';
 import { createAccountById } from '@/lib/auth-actions';
 import { idToAuthEmail, isValidUsername, isValidPassword } from '@/lib/username';
 import { TERMS_OF_SERVICE, PRIVACY_POLICY, MARKETING_CONSENT_DETAIL } from '@/lib/legal-content';

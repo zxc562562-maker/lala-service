@@ -1,10 +1,10 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { supabaseAdmin } from './supabase/server';
-import { getCachedUser } from './auth-cache';
+import { supabaseAdmin } from '@lala/shared/lib/supabase/server';
+import { getCachedUser } from '@lala/shared/lib/auth-cache';
 import { getReservationsForProductIds, getSizeAvailabilityForRange as _getSizeAvailabilityForRange, getSizeAvailabilityByNames as _getSizeAvailabilityByNames, type SizeOption } from './queries';
-import { expandUnavailableDates } from './domain/reservation';
+import { expandUnavailableDates } from '@lala/shared/lib/domain/reservation';
 
 export interface CartLine {
   id: string;        // cart_item id

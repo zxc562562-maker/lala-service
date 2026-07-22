@@ -1,6 +1,6 @@
 import 'server-only';
-import { supabaseAdmin } from './supabase/server';
-import { sendPushToCustomers } from './push';
+import { supabaseAdmin } from '@lala/shared/lib/supabase/server';
+import { sendPushToCustomers } from '@lala/shared/lib/push';
 
 /** 정보통신망법: 광고성 정보는 오후 9시~오전 8시(KST)에는 전송할 수 없다(별도 야간 동의가 없는 한). */
 export function isWithinAllowedSendingHours(at: Date = new Date()): boolean {
