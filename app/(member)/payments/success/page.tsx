@@ -7,19 +7,20 @@ import { confirmPayment } from '@/lib/payments-actions';
 
 function PaymentSuccessContent() {
   const p = useSearchParams();
-  const [state, setState] = useState<'loading' | 'ok' | 'fail'>('loading');
-  const [msg, setMsg] = useState('');
+  const paymentKey = p.get('paymentKey');
+  const orderId = p.get('orderId');
+  const amount = Number(p.get('amount'));
+  const paramsValid = !!(paymentKey && orderId && amount);
+
+  const [state, setState] = useState<'loading' | 'ok' | 'fail'>(paramsValid ? 'loading' : 'fail');
+  const [msg, setMsg] = useState(paramsValid ? '' : '결제 정보가 올바르지 않습니다.');
   const ran = useRef(false);
 
   useEffect(() => {
-    if (ran.current) return;
+    if (!paramsValid || ran.current) return;
     ran.current = true;
-    const paymentKey = p.get('paymentKey');
-    const orderId = p.get('orderId');
-    const amount = Number(p.get('amount'));
-    if (!paymentKey || !orderId || !amount) { setState('fail'); setMsg('결제 정보가 올바르지 않습니다.'); return; }
     (async () => {
-      const res = await confirmPayment(paymentKey, orderId, amount);
+      const res = await confirmPayment(paymentKey!, orderId!, amount);
       if (res.ok) setState('ok');
       else { setState('fail'); setMsg(res.reason); }
     })();
@@ -33,8 +34,8 @@ function PaymentSuccessContent() {
       {state === 'ok' && (
         <div className="booked">
           <div className="booked-mark">✓</div>
-          <p>결제가 완료됐습니다. 「My 렌탈」에서 확인할 수 있어요.</p>
-          <Link href="/account" className="cta ghost" style={{ display: 'inline-block', width: 'auto', padding: '12px 22px' }}>My 렌탈 보기</Link>
+          <p>결제가 완료됐습니다. 「내 렌탈」에서 확인할 수 있어요.</p>
+          <Link href="/account" className="cta ghost" style={{ display: 'inline-block', width: 'auto', padding: '12px 22px' }}>내 렌탈 보기</Link>
         </div>
       )}
       {state === 'fail' && (

@@ -1,7 +1,8 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { supabaseAdmin, supabaseServer } from './supabase/server';
+import { supabaseAdmin } from './supabase/server';
+import { getCachedUser } from './auth-cache';
 import { getReservationsForProductIds, getSizeAvailabilityForRange as _getSizeAvailabilityForRange, getSizeAvailabilityByNames as _getSizeAvailabilityByNames, type SizeOption } from './queries';
 import { expandUnavailableDates } from './domain/reservation';
 
@@ -18,7 +19,7 @@ export interface CartLine {
 
 /** 현재 로그인 사용자의 customer.id 를 찾거나 생성 */
 async function resolveCustomerId(): Promise<string | null> {
-  const { data: { user } } = await supabaseServer().auth.getUser();
+  const user = await getCachedUser();
   if (!user) return null;
 
   const sb = supabaseAdmin();
@@ -140,9 +141,12 @@ export async function getSizeAvailabilityByNames(names: string[]): Promise<Recor
   return _getSizeAvailabilityByNames(names);
 }
 
-/** 카트에 담긴 모든 상품의 예약을 합친 "예약 불가 날짜"(YYYY-MM-DD) 목록 */
-export async function getCartBusyDates(): Promise<string[]> {
-  const items = await getCartItems();
-  const reservations = await getReservationsForProductIds(items.map((i) => i.productId));
+/**
+ * 카트에 담긴 모든 상품의 예약을 합친 "예약 불가 날짜"(YYYY-MM-DD) 목록.
+ * 호출하는 쪽이 이미 getCartItems()로 받아둔 목록이 있으면 넘겨서 중복 조회를 피할 수 있다.
+ */
+export async function getCartBusyDates(items?: CartLine[]): Promise<string[]> {
+  const cartItems = items ?? await getCartItems();
+  const reservations = await getReservationsForProductIds(cartItems.map((i) => i.productId));
   return Array.from(expandUnavailableDates(reservations));
 }

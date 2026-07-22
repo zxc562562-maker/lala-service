@@ -24,6 +24,16 @@ export async function tossGetPayment(paymentKey: string) {
   return { ok: res.ok, data: await res.json() };
 }
 
+/** 전액 취소(환불). 부분 취소가 필요해지기 전까지는 amount를 안 넘겨 전액 취소로만 사용. */
+export async function tossCancel(paymentKey: string, cancelReason: string) {
+  const res = await fetch(`${TOSS_API}/${paymentKey}/cancel`, {
+    method: 'POST',
+    headers: { Authorization: authHeader(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ cancelReason }),
+  });
+  return { ok: res.ok, data: await res.json() };
+}
+
 /**
  * 결제 완료된 주문을 예약으로 확정한다. 세션에 의존하지 않으며(주문의 customer_id 사용),
  * 결제 성공 리다이렉트 처리와 웹훅 양쪽에서 호출될 수 있어 원자적으로 1회만 처리한다.

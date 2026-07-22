@@ -56,6 +56,21 @@ db/marketing-granular-consent.sql
 db/address-change-log.sql
 db/reservation-order-link.sql
 db/fulfillment-status-v2.sql
+db/product-unique-name-size.sql
+db/store-pickup-return.sql
+db/delivery-time-slot.sql
+db/store-closures.sql
+db/reservation-item-issue.sql
+db/drop-fitting-info.sql
+db/address-book.sql
+db/order-cancel.sql
+db/delivery-method.sql
+db/delivery-zonecode.sql
+db/delivery-recipient-name.sql
+db/address-book-zonecode.sql
+db/return-request.sql
+db/return-tracking.sql
+db/packaging-photo.sql
 ```
 
 Supabase Authentication 설정에서 "Confirm email"은 꺼도 되고 안 꺼도 됩니다 — 가입 로직이 관리자 API(`auth.admin.createUser` + `email_confirm:true`)로 이 설정을 우회하도록 이미 구현되어 있습니다(`lib/auth-actions.ts`). 다만 실제로 그렇게 동작하는지는 검증 항목입니다.
@@ -77,7 +92,7 @@ npm run dev
 ## 4. 검증 체크리스트 (HANDOFF.md 상단 체크리스트를 실행 가능한 순서로 재정리)
 
 - [ ] `npm run build` 통과
-- [ ] DB 마이그레이션 22개 파일 순서대로 에러 없이 실행됨
+- [ ] DB 마이그레이션 28개 파일 순서대로 에러 없이 실행됨
 - [ ] 회원가입(ID/비번) → 멤버십 결제(테스트 카드) → `customer.status`가 `unpaid → pending`으로 바뀌는지 확인
 - [ ] 디렉터 계정으로 `/admin/approvals`에서 승인 → 해당 계정 로그인 시 `/looks` 진입 가능한지 확인
 - [ ] 웹 푸시: VAPID 키 설정 후 `/profile`에서 알림 켜고, 승인/멤버십결제/렌탈결제/배송시작·완료/보증금환불/탈퇴 각 트리거에서 브라우저 알림이 실제로 뜨는지 확인

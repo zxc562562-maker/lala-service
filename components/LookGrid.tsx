@@ -25,6 +25,7 @@ export default function LookGrid({
   const [added, setAdded] = useState<Record<string, boolean>>(() => Object.fromEntries(inCart.map((id) => [id, true])));
   const [pending, startTransition] = useTransition();
   const [selectedSize, setSelectedSize] = useState<Record<string, string>>({});
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   function getSizeOptions(p: Product): SizeOption[] {
     const opts = sizeMap[p.name];
@@ -39,8 +40,10 @@ export default function LookGrid({
   }
 
   useEffect(() => {
+    // localStorage는 서버 렌더에 없어 여기(마운트 후)에서만 읽을 수 있음
     const saved = localStorage.getItem('lala_look_view');
     if (saved === 'single' || saved === 'triple' || saved === 'products') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setViewMode(!isLoggedIn && saved === 'products' ? 'single' : saved);
     }
   }, [isLoggedIn]);
@@ -63,6 +66,9 @@ export default function LookGrid({
   const visible = isLoggedIn ? LOOKS : LOOKS.slice(0, 9);
   const locked = isLoggedIn ? [] : LOOKS.slice(9);
   const gridClass = viewMode === 'triple' ? 'look-grid look-grid-triple' : 'look-grid';
+
+  const categories = Array.from(new Set(products.map((p) => p.category)));
+  const visibleProducts = selectedCategory ? products.filter((p) => p.category === selectedCategory) : products;
 
   const card = (l: (typeof LOOKS)[number]) => (
     <Link key={l.id} href={`/looks/${l.id}`} className="look-card">
@@ -111,13 +117,34 @@ export default function LookGrid({
         </button>
       </div>
 
+      {viewMode === 'products' && (
+        <div className="category-filter-row">
+          <button
+            type="button"
+            className={`category-filter-link ${!selectedCategory ? 'on' : ''}`}
+            onClick={() => setSelectedCategory(null)}
+          >
+            전체
+          </button>
+          {categories.map((c) => (
+            <button
+              key={c}
+              type="button"
+              className={`category-filter-link ${selectedCategory === c ? 'on' : ''}`}
+              onClick={() => setSelectedCategory(c)}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+      )}
+
       {viewMode === 'products' ? (
         <div className="product-list">
-          {products.map((p) => {
+          {visibleProducts.map((p) => {
             const opts = getSizeOptions(p);
             const productId = resolveProductId(p.name, p.id, opts);
             const isIn = !!productId && !!added[productId];
-            const needsSize = !productId;
             return (
               <div className="product-row" key={p.id}>
                 <div className="product-row-thumb" style={{ background: `linear-gradient(160deg, ${p.c2}, ${p.c1})` }} />
@@ -125,29 +152,28 @@ export default function LookGrid({
                   <div className="product-row-name">{p.name}</div>
                   <span className="product-row-price">{won(p.dailyPrice)} /일</span>
                 </div>
-                {needsSize ? (
-                  <div className="size-chip-row size-chip-row-slot">
+                <div className="li-row">
+                  <div className="size-chip-row">
                     {opts.map((s) => (
                       <button
                         key={s.size}
                         type="button"
                         disabled={!s.available}
                         onClick={() => setSelectedSize((m) => ({ ...m, [p.name]: s.size }))}
-                        className={!s.available ? 'size-chip unavailable' : 'size-chip pickable'}
+                        className={`size-chip ${!s.available ? 'unavailable' : selectedSize[p.name] === s.size ? 'chosen' : 'pickable'}`}
                       >
                         {s.size}
                       </button>
                     ))}
                   </div>
-                ) : (
                   <button
                     className={`li-add ${isIn ? 'added' : ''}`}
-                    disabled={isIn || pending}
+                    disabled={!productId || isIn || pending}
                     onClick={() => addProduct(p.name, p.id, opts)}
                   >
                     {isIn ? '담김' : '담기'}
                   </button>
-                )}
+                </div>
               </div>
             );
           })}

@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import CustomerHeader from '@/components/CustomerHeader';
+import PushPermissionPrompt from '@/components/PushPermissionPrompt';
 import { getAccess } from '@/lib/roles';
 
 export const dynamic = 'force-dynamic';
@@ -13,6 +14,7 @@ export default async function MemberLayout({ children }: { children: React.React
     <>
       <CustomerHeader />
       <main className="wrap">{children}</main>
+      <PushPermissionPrompt />
     </>
   );
 }

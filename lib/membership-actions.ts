@@ -7,7 +7,7 @@ import { MEMBERSHIP_FEE } from './pricing';
 
 /** 현재 로그인 사용자의 customer 행을 찾는다(역할 무관, 상태 무관). */
 async function resolveCustomer(): Promise<{ id: string; status: string } | null> {
-  const { data: { user } } = await supabaseServer().auth.getUser();
+  const { data: { user } } = await (await supabaseServer()).auth.getUser();
   if (!user) return null;
   const sb = supabaseAdmin();
   const { data } = await sb.from('customer').select('id,status').eq('auth_user_id', user.id).maybeSingle();

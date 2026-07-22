@@ -1,14 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { supabaseBrowser } from '@/lib/supabase/client';
 import { idToAuthEmail } from '@/lib/username';
 import { getMyAccess } from '@/lib/roles-actions';
 
-export default function LoginPage() {
-  const router = useRouter();
+function LoginForm() {
   const params = useSearchParams();
   const next = params.get('next') || '/looks';
   const [id, setId] = useState('');
@@ -39,18 +38,15 @@ export default function LoginPage() {
     if (error) { setBusy(false); setErr('ID 또는 비밀번호가 올바르지 않습니다.'); return; }
 
     const access = await getMyAccess();
-    setBusy(false);
-    if (access?.status === 'unpaid') router.push('/membership');
-    else if (access?.status === 'pending') router.push('/pending');
-    else router.push(next);
-    router.refresh();
+    // router.push + router.refresh를 연달아 호출하면 화면 전환이 멈추는 경우가 있어(재현됨),
+    // 로그인 직후처럼 헤더 등 인증 상태가 바뀌는 시점엔 전체 페이지 이동으로 확실하게 전환한다.
+    if (access?.status === 'unpaid') window.location.href = '/membership';
+    else if (access?.status === 'pending') window.location.href = '/pending';
+    else window.location.href = next;
   }
 
   return (
     <div className="auth">
-      <h1 className="serif">로그인</h1>
-      <p className="auth-sub">예약을 진행하려면 로그인하세요.</p>
-
       <div className="sns-row">
         <button className="sns-btn sns-kakao" onClick={() => snsMock('카카오')}>카카오로 로그인</button>
         <button className="sns-btn sns-naver" onClick={() => snsMock('네이버')}>네이버로 로그인</button>
@@ -78,5 +74,13 @@ export default function LoginPage() {
         계정이 없으신가요? <Link href={`/signup?next=${encodeURIComponent(next)}`}>가입하기</Link>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   );
 }

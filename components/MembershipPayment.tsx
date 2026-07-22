@@ -7,16 +7,19 @@ import { createMembershipOrder } from '@/lib/membership-actions';
 const won = (n: number) => n.toLocaleString('ko-KR') + '원';
 
 export default function MembershipPayment() {
+  const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
+
   const [amount, setAmount] = useState<number | null>(null);
   const [ready, setReady] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(clientKey ? null : '결제 설정(NEXT_PUBLIC_TOSS_CLIENT_KEY)이 없습니다.');
   const widgetsRef = useRef<Awaited<ReturnType<Awaited<ReturnType<typeof loadTossPayments>>['widgets']>> | null>(null);
   const orderRef = useRef<{ orderId: string; orderName: string } | null>(null);
-  const customerKey = useRef('cust_' + Math.random().toString(36).slice(2)).current;
+  const [customerKey] = useState(() => 'cust_' + Math.random().toString(36).slice(2));
+  const ran = useRef(false);
 
   useEffect(() => {
-    const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
-    if (!clientKey) { setErr('결제 설정(NEXT_PUBLIC_TOSS_CLIENT_KEY)이 없습니다.'); return; }
+    if (!clientKey || ran.current) return;
+    ran.current = true;
 
     let alive = true;
     (async () => {
@@ -39,7 +42,7 @@ export default function MembershipPayment() {
     })().catch((e) => alive && setErr(e?.message || '결제창을 불러오지 못했습니다.'));
 
     return () => { alive = false; };
-  }, [customerKey]);
+  }, [customerKey, clientKey]);
 
   async function pay() {
     if (!widgetsRef.current || !orderRef.current) return;

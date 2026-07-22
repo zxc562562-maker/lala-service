@@ -6,8 +6,8 @@ import { supabaseServer } from './supabase/server';
 
 /** 로그아웃 (헤더의 form action으로 호출) */
 export async function signOut() {
-  const sb = supabaseServer();
+  const sb = await supabaseServer();
   await sb.auth.signOut();
-  cookies().delete('lala_remember');
+  (await cookies()).delete('lala_remember');
   redirect('/');
 }

@@ -8,8 +8,8 @@ import { createClient } from '@supabase/supabase-js';
  * RLS 정책이 적용되므로, 이걸로 읽으면 본인 데이터만 보인다.
  * (서버 컴포넌트/서버 액션/라우트 핸들러에서 사용)
  */
-export function supabaseServer() {
-  const cookieStore = cookies();
+export async function supabaseServer() {
+  const cookieStore = await cookies();
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,

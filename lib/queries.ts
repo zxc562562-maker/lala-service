@@ -1,3 +1,4 @@
+import { unstable_cache } from 'next/cache';
 import { supabaseAdmin } from './supabase/server';
 import type { Product } from './types';
 import type { Reservation } from './domain/reservation';
@@ -30,7 +31,12 @@ function mapResv(r: ResvRow): Reservation {
 }
 
 // ---- 카탈로그 ----
-export async function getProducts(): Promise<Product[]> {
+// 카탈로그(상품 목록)·사이즈 재고는 특정 회원 것이 아니라 모든 방문자가 동일하게 보는 데이터라
+// 짧은 시간(30초) 동안은 캐시해서 재사용한다 — 부하 테스트에서 /looks 페이지가 동시접속마다
+// 매번 실 DB를 새로 조회해 심각하게 느려지는 문제(동시접속 20 기준 중앙값 3957ms)를 발견해서 추가함.
+// 여기 나오는 "대여 가능 여부"는 어디까지나 화면 표시용이고, 실제 예약 충돌 방지는 이 캐시와
+// 무관하게 예약 생성 시점에 별도로 처리되므로 30초 지연이 생겨도 예약 정합성엔 영향 없음.
+async function fetchProducts(): Promise<Product[]> {
   const sb = supabaseAdmin();
   const { data, error } = await sb
     .from('product')
@@ -42,6 +48,7 @@ export async function getProducts(): Promise<Product[]> {
   const seen = new Set<string>();
   return rows.filter((p) => (seen.has(p.name) ? false : (seen.add(p.name), true)));
 }
+export const getProducts = unstable_cache(fetchProducts, ['catalog-products'], { revalidate: 30 });
 
 /** 카탈로그의 "다음 가능일" 계산용: 모든 ACTIVE 예약을 상품별로 묶어서 반환 */
 export async function getReservationsByProduct(): Promise<Record<string, Reservation[]>> {
@@ -159,7 +166,7 @@ export async function getSizeAvailabilityForRange(
 }
 
 /** 스타일(이름)별로 보유한 모든 사이즈 + 사이즈별 대여 가능 여부(재고 1개 이상 AVAILABLE인지) + 각 사이즈의 productId */
-export async function getSizeAvailabilityByNames(names: string[]): Promise<Record<string, SizeOption[]>> {
+async function fetchSizeAvailabilityByNames(names: string[]): Promise<Record<string, SizeOption[]>> {
   if (names.length === 0) return {};
   const sb = supabaseAdmin();
   const { data, error } = await sb
@@ -186,6 +193,9 @@ export async function getSizeAvailabilityByNames(names: string[]): Promise<Recor
   }
   return out;
 }
+export const getSizeAvailabilityByNames = unstable_cache(
+  fetchSizeAvailabilityByNames, ['catalog-size-availability'], { revalidate: 30 },
+);
 
 /** 여러 상품(id)의 ACTIVE 예약을 합쳐 반환 (카트 달력 가용성 계산용) */
 export async function getReservationsForProductIds(productIds: string[]): Promise<Reservation[]> {

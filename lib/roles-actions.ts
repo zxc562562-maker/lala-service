@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { supabaseServer, supabaseAdmin } from './supabase/server';
 import { getAccess, type Access } from './roles';
 import { sendPushToCustomer } from './push';
+import { tossCancel } from './payments';
 
 /** 클라이언트 컴포넌트에서 로그인 직후 상태를 확인하기 위한 래퍼 */
 export async function getMyAccess(): Promise<Access | null> {
@@ -16,13 +17,6 @@ export async function isUsernameAvailable(username: string): Promise<boolean> {
   const sb = supabaseAdmin();
   const { data } = await sb.from('customer').select('id').ilike('username', username).maybeSingle();
   return !data;
-}
-
-export interface FittingInfo {
-  heightCm?: number;
-  topSize?: string;
-  waistCm?: number;
-  shoeSize?: string;
 }
 
 export interface DeliveryInfo {
@@ -41,20 +35,18 @@ export interface DeliveryInfo {
 export interface RegisterMembershipInput {
   username: string;
   marketingConsent: boolean;
-  fitting?: FittingInfo;
   delivery?: DeliveryInfo;
 }
 
 /** 가입 직후 호출: 승인대기(customer pending) 멤버십 생성 */
 export async function registerMembership(input: RegisterMembershipInput): Promise<{ ok: boolean; reason?: string }> {
-  const { data: { user } } = await supabaseServer().auth.getUser();
+  const { data: { user } } = await (await supabaseServer()).auth.getUser();
   if (!user) return { ok: false, reason: '로그인이 필요합니다.' };
   const sb = supabaseAdmin();
   const { data: existing } = await sb.from('customer').select('id').eq('auth_user_id', user.id).maybeSingle();
   if (existing) return { ok: true };
   const name = (user.user_metadata?.name as string) || '고객';
   const phone = (user.user_metadata?.phone as string) || null;
-  const f = input.fitting ?? {};
   const d = input.delivery ?? {};
   const { error } = await sb.from('customer').insert({
     auth_user_id: user.id,
@@ -71,10 +63,6 @@ export async function registerMembership(input: RegisterMembershipInput): Promis
     marketing_daily_consent: input.marketingConsent,
     marketing_daily_consent_at: input.marketingConsent ? new Date().toISOString() : null,
     terms_agreed_at: new Date().toISOString(), // 가입 버튼을 눌렀다는 것 자체가 필수 약관 동의를 의미
-    height_cm: f.heightCm ?? null,
-    top_size: f.topSize || null,
-    waist_cm: f.waistCm ?? null,
-    shoe_size: f.shoeSize || null,
     delivery_address: d.deliveryAddress || null,
     delivery_jibun_address: d.deliveryJibunAddress || null,
     delivery_detail_address: d.deliveryDetailAddress || null,
@@ -119,10 +107,23 @@ export async function approveMember(customerId: string): Promise<{ ok: boolean }
   return { ok: !error };
 }
 
-export async function rejectMember(customerId: string): Promise<{ ok: boolean }> {
+/** 가입 거절: 이미 낸 멤버십 가입비를 전액 환불한 뒤에만 회원 정보를 삭제한다. */
+export async function rejectMember(customerId: string): Promise<{ ok: boolean; reason?: string }> {
   const me = await getAccess();
   if (!me?.isApprover) return { ok: false };
   const sb = supabaseAdmin();
+
+  // status='pending'이 될 수 있는 건 가입비 결제(PAID)를 이미 마쳤을 때뿐이라, 대상이 있으면 항상 환불한다.
+  const { data: payment } = await sb
+    .from('membership_payment')
+    .select('payment_key,status')
+    .eq('customer_id', customerId).eq('status', 'PAID')
+    .order('created_at', { ascending: false }).maybeSingle();
+  if (payment?.payment_key) {
+    const cancel = await tossCancel(payment.payment_key, '가입 승인 거절에 따른 가입비 전액 환불');
+    if (!cancel.ok) return { ok: false, reason: '가입비 환불에 실패해 거절을 처리하지 못했어요. 잠시 후 다시 시도해주세요.' };
+  }
+
   const { error } = await sb.from('customer').delete().eq('id', customerId).eq('status', 'pending');
   revalidatePath('/admin/approvals');
   return { ok: !error }; // 거절 시 알림 없음(정책)

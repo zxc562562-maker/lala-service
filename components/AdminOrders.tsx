@@ -3,17 +3,20 @@
 import { useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabaseBrowser } from '@/lib/supabase/client';
-import { updateFulfillment, assignOrder, openDispute, resolveDispute, type OrderRow, type Fulfillment } from '@/lib/staff-actions';
+import { updateFulfillment, assignOrder, openDispute, resolveDispute, setItemIssue, type OrderRow, type Fulfillment } from '@/lib/staff-actions';
+import { getDeliverySlotLabel } from '@/lib/delivery';
+import ReturnTrackingAdminForm from './ReturnTrackingAdminForm';
+import PackagingPhotoAdminForm from './PackagingPhotoAdminForm';
 
 const won = (n: number) => n.toLocaleString('ko-KR') + '원';
 const STATUSES: Fulfillment[] = [
-  'ORDERED', 'PRE_INSPECTING', 'READY', 'SHIPPED', 'DELIVERED', 'RETURN_INSPECTING', 'REFUNDED',
+  'ORDERED', 'PRE_INSPECTING', 'READY', 'SHIPPED', 'DELIVERED', 'RETURN_REQUESTED', 'RETURN_INSPECTING', 'REFUNDED',
   'PRE_INSPECT_ISSUE', 'MISDELIVERED', 'RETURN_ISSUE',
 ];
 const LABEL: Record<Fulfillment, string> = {
-  ORDERED: '주문결제', PRE_INSPECTING: '주문검수중', READY: '배송대기중', SHIPPED: '배송중',
-  DELIVERED: '배송완료', RETURN_INSPECTING: '수거검수중', REFUNDED: '완료(환불됨)',
-  PRE_INSPECT_ISSUE: '검수 보류(주문검수)', MISDELIVERED: '오배송', RETURN_ISSUE: '반납 이슈(수거검수)',
+  ORDERED: '주문결제', PRE_INSPECTING: '상품검수중', READY: '배송대기중', SHIPPED: '배송중',
+  DELIVERED: '배송완료', RETURN_REQUESTED: '반납접수 요청됨(택배)', RETURN_INSPECTING: '반납검수중', REFUNDED: '완료(환불됨)',
+  PRE_INSPECT_ISSUE: '검수 보류(상품검수)', MISDELIVERED: '오배송', RETURN_ISSUE: '반납 이슈(반납검수)',
 };
 
 export default function AdminOrders({ orders, staff }: { orders: OrderRow[]; staff: { id: string; name: string }[] }) {
@@ -50,6 +53,9 @@ export default function AdminOrders({ orders, staff }: { orders: OrderRow[]; sta
   function resolve(orderId: string) {
     startTransition(async () => { await resolveDispute(orderId); router.refresh(); });
   }
+  function toggleIssue(reservationId: string, hasIssue: boolean) {
+    startTransition(async () => { await setItemIssue(reservationId, hasIssue); router.refresh(); });
+  }
 
   return (
     <section>
@@ -66,6 +72,7 @@ export default function AdminOrders({ orders, staff }: { orders: OrderRow[]; sta
               <span className="order-amt">{won(o.amount)}</span>
             </div>
             <div className="order-sub">{o.checkout} → {o.return}</div>
+            <div className="order-sub">배송 시간: {getDeliverySlotLabel(o.deliverySlot)}</div>
             {o.disputed && o.disputeReason && (
               <div className="order-dispute-reason">사유: {o.disputeReason}</div>
             )}
@@ -82,6 +89,30 @@ export default function AdminOrders({ orders, staff }: { orders: OrderRow[]; sta
                 </select>
               </label>
             </div>
+            <PackagingPhotoAdminForm orderId={o.id} photoUrl={o.packagingPhotoUrl} />
+            {(o.fulfillment === 'PRE_INSPECT_ISSUE' || o.fulfillment === 'RETURN_ISSUE') && o.items.length > 0 && (
+              <div className="order-issue-items">
+                <div className="field-section" style={{ margin: '8px 0 4px' }}>문제 상품 지정 (회원 화면에 해당 상품만 안내 표시)</div>
+                {o.items.map((item) => (
+                  <label key={item.id} className="agree-row" style={{ fontSize: 12 }}>
+                    <input
+                      type="checkbox"
+                      checked={item.hasIssue}
+                      disabled={pending}
+                      onChange={(e) => toggleIssue(item.id, e.target.checked)}
+                    />
+                    <span>{item.productName}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+            {o.fulfillment === 'RETURN_REQUESTED' && o.deliveryMethod === 'PARCEL' && (
+              <ReturnTrackingAdminForm
+                orderId={o.id}
+                initialCourier={o.returnCourier ?? ''}
+                initialTrackingNumber={o.returnTrackingNumber ?? ''}
+              />
+            )}
             <div className="order-dispute-ctrl">
               {o.disputed ? (
                 <button className="cta ghost" disabled={pending} onClick={() => resolve(o.id)} style={{ width: 'auto', padding: '8px 14px', fontSize: 12 }}>

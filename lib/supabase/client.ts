@@ -1,5 +1,5 @@
 'use client';
-import { createBrowserClient } from '@supabase/ssr';
+import { createBrowserClient, type CookieOptions } from '@supabase/ssr';
 
 function parseBrowserCookies(): { name: string; value: string }[] {
   if (typeof document === 'undefined') return [];
@@ -28,12 +28,15 @@ export function supabaseBrowser(opts?: { rememberMe?: boolean }) {
           getAll() {
             return parseBrowserCookies();
           },
-          setAll(cookiesToSet: { name: string; value: string; options?: { path?: string; sameSite?: string; secure?: boolean } }[]) {
+          setAll(cookiesToSet: { name: string; value: string; options?: CookieOptions }[]) {
             cookiesToSet.forEach(({ name, value, options }) => {
               // maxAge/expires를 빼면 브라우저가 "세션 쿠키"로 취급 — 앱/브라우저를 완전히 닫으면 사라짐
               let str = `${name}=${encodeURIComponent(value)}`;
               if (options?.path) str += `; path=${options.path}`;
-              if (options?.sameSite) str += `; samesite=${options.sameSite}`;
+              if (options?.sameSite) {
+                const sameSite = typeof options.sameSite === 'string' ? options.sameSite : 'strict';
+                str += `; samesite=${sameSite}`;
+              }
               if (options?.secure) str += '; secure';
               document.cookie = str;
             });

@@ -1,11 +1,11 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { supabaseServer } from '@/lib/supabase/server';
+import { getCachedUser } from '@/lib/auth-cache';
 
 export const dynamic = 'force-dynamic';
 
 export default async function Landing() {
-  const { data: { user } } = await supabaseServer().auth.getUser();
+  const user = await getCachedUser();
   if (user) redirect('/looks');
 
   return (

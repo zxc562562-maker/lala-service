@@ -1,18 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { supabaseBrowser } from '@/lib/supabase/client';
 import { registerMembership, isUsernameAvailable } from '@/lib/roles-actions';
 import { createAccountById } from '@/lib/auth-actions';
 import { idToAuthEmail, isValidUsername, isValidPassword } from '@/lib/username';
 import { TERMS_OF_SERVICE, PRIVACY_POLICY, MARKETING_CONSENT_DETAIL } from '@/lib/legal-content';
-import { openAddressSearch } from '@/lib/address-search';
 import { checkPhoneVerifyRateLimit } from '@/lib/phone-verify-actions';
 
-export default function SignupPage() {
-  const router = useRouter();
+function SignupForm() {
   const next = useSearchParams().get('next') || '/';
   const [id, setId] = useState('');
   const [idChecked, setIdChecked] = useState(false);
@@ -42,43 +40,6 @@ export default function SignupPage() {
   const [code, setCode] = useState('');
   const [phoneVerified, setPhoneVerified] = useState(false);
   const [phoneStatus, setPhoneStatus] = useState<string | null>(null);
-
-  // 선택 정보: 피팅 / 배송 (버튼을 눌러야 펼쳐짐)
-  const [showFitting, setShowFitting] = useState(false);
-  const [heightCm, setHeightCm] = useState('');
-  const [topSize, setTopSize] = useState('');
-  const [waistCm, setWaistCm] = useState('');
-  const [shoeSize, setShoeSize] = useState('');
-
-  const [showDelivery, setShowDelivery] = useState(false);
-  const [deliveryAddress, setDeliveryAddress] = useState('');
-  const [deliveryJibun, setDeliveryJibun] = useState('');
-  const [deliveryDetailAddress, setDeliveryDetailAddress] = useState('');
-  const [workplace, setWorkplace] = useState('');
-  const [deliveryPhone, setDeliveryPhone] = useState('');
-  const [returnAddress, setReturnAddress] = useState('');
-  const [returnJibun, setReturnJibun] = useState('');
-  const [returnDetailAddress, setReturnDetailAddress] = useState('');
-  const [entrancePassword, setEntrancePassword] = useState('');
-  const [returnEntrancePassword, setReturnEntrancePassword] = useState('');
-  const [sameAsDelivery, setSameAsDelivery] = useState(false);
-  const [sameEntrance, setSameEntrance] = useState(false);
-
-  // 공동현관 비밀번호도 동일하면, 배송 장소 값이 바뀔 때마다 회수 장소도 함께 따라간다.
-  useEffect(() => {
-    if (sameEntrance) setReturnEntrancePassword(entrancePassword);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sameEntrance, entrancePassword]);
-
-  // 회수 장소가 배송 장소와 동일하면, 배송 장소가 바뀔 때마다 함께 따라간다.
-  useEffect(() => {
-    if (sameAsDelivery) {
-      setReturnAddress(deliveryAddress);
-      setReturnJibun(deliveryJibun);
-      setReturnDetailAddress(deliveryDetailAddress);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sameAsDelivery, deliveryAddress, deliveryJibun, deliveryDetailAddress]);
 
   function snsMock(provider: string) {
     setSnsMsg(`${provider} 간편가입은 준비 중이에요. 곧 지원할 예정입니다.`);
@@ -151,29 +112,12 @@ export default function SignupPage() {
     const reg = await registerMembership({
       username: id,
       marketingConsent: finalMarketing,
-      fitting: {
-        heightCm: heightCm ? Number(heightCm) : undefined,
-        topSize: topSize || undefined,
-        waistCm: waistCm ? Number(waistCm) : undefined,
-        shoeSize: shoeSize || undefined,
-      },
-      delivery: {
-        deliveryAddress: deliveryAddress || undefined,
-        deliveryJibunAddress: deliveryJibun || undefined,
-        deliveryDetailAddress: deliveryDetailAddress || undefined,
-        workplace: workplace || undefined,
-        deliveryPhone: deliveryPhone || undefined,
-        returnAddress: returnAddress || undefined,
-        returnJibunAddress: returnJibun || undefined,
-        returnDetailAddress: returnDetailAddress || undefined,
-        entrancePassword: entrancePassword || undefined,
-        returnEntrancePassword: returnEntrancePassword || undefined,
-      },
     });
     setBusy(false);
     if (!reg.ok) { setErr(reg.reason ?? '가입 처리 중 오류가 발생했습니다.'); return; }
-    router.push('/membership');
-    router.refresh();
+    // router.push + router.refresh를 연달아 호출하면 화면 전환이 멈추는 경우가 있어(재현됨),
+    // 가입 직후처럼 인증 상태가 바뀌는 시점엔 전체 페이지 이동으로 확실하게 전환한다.
+    window.location.href = '/membership';
   }
 
   return (
@@ -253,73 +197,6 @@ export default function SignupPage() {
           <a className="agree-view" onClick={(e) => { e.preventDefault(); setLegalOpen('marketing'); }}>보기</a>
         </label>
 
-        <div className="field-section">선택 정보</div>
-
-        <button type="button" className="cta ghost optional-toggle" onClick={() => setShowFitting((v) => !v)}>
-          {showFitting ? '피팅 정보 접기' : '피팅 정보 입력하기'}
-        </button>
-        {showFitting && (
-          <div className="optional-panel">
-            <div className="signup-optional-row">
-              <input className="field" placeholder="키 (cm)" inputMode="numeric" value={heightCm} onChange={(e) => setHeightCm(e.target.value)} />
-              <input className="field" placeholder="상의 사이즈(S/M/L)" value={topSize} onChange={(e) => setTopSize(e.target.value)} />
-            </div>
-            <div className="signup-optional-row">
-              <input className="field" placeholder="허리 (inch)" inputMode="numeric" value={waistCm} onChange={(e) => setWaistCm(e.target.value)} />
-              <input className="field" placeholder="구두 사이즈(mm)" value={shoeSize} onChange={(e) => setShoeSize(e.target.value)} />
-            </div>
-          </div>
-        )}
-
-        <button type="button" className="cta ghost optional-toggle" onClick={() => setShowDelivery((v) => !v)}>
-          {showDelivery ? '배송 정보 접기' : '배송 정보 입력하기'}
-        </button>
-        {showDelivery && (
-          <div className="optional-panel">
-            <div className="addr-row">
-              <input className="field" placeholder="배송지 주소" value={deliveryAddress} onChange={(e) => setDeliveryAddress(e.target.value)} />
-              <button
-                type="button"
-                className="cta ghost addr-btn"
-                onClick={() => openAddressSearch((r) => { setDeliveryAddress(r.roadAddress); setDeliveryJibun(r.jibunAddress); })}
-              >주소 검색</button>
-            </div>
-            {deliveryJibun && <div className="addr-jibun">지번 주소: {deliveryJibun}</div>}
-            <input className="field" placeholder="세부 주소 (건물명, 호수)" value={deliveryDetailAddress} onChange={(e) => setDeliveryDetailAddress(e.target.value)} />
-            <input className="field" placeholder="공동현관 비밀번호(자유출입시 미기재)" value={entrancePassword} onChange={(e) => setEntrancePassword(e.target.value)} />
-
-            <div className="addr-row" style={{ marginTop: 14 }}>
-              <input className="field" placeholder="회수지 주소" value={returnAddress} disabled={sameAsDelivery} onChange={(e) => setReturnAddress(e.target.value)} />
-              <button
-                type="button"
-                className="cta ghost addr-btn"
-                disabled={sameAsDelivery}
-                onClick={() => openAddressSearch((r) => { setReturnAddress(r.roadAddress); setReturnJibun(r.jibunAddress); })}
-              >주소 검색</button>
-            </div>
-            {returnJibun && <div className="addr-jibun">지번 주소: {returnJibun}</div>}
-            <input className="field" placeholder="세부 주소 (건물명, 호수)" value={returnDetailAddress} disabled={sameAsDelivery} onChange={(e) => setReturnDetailAddress(e.target.value)} />
-            <input
-              className="field"
-              placeholder="공동현관 비밀번호(자유출입시 미기재)"
-              value={returnEntrancePassword}
-              disabled={sameEntrance}
-              onChange={(e) => setReturnEntrancePassword(e.target.value)}
-            />
-            <label className="agree-row">
-              <input type="checkbox" checked={sameAsDelivery} onChange={(e) => setSameAsDelivery(e.target.checked)} />
-              <span>배송지 주소와 동일</span>
-            </label>
-            <label className="agree-row">
-              <input type="checkbox" checked={sameEntrance} onChange={(e) => setSameEntrance(e.target.checked)} />
-              <span>공동현관 비밀번호 동일</span>
-            </label>
-            <input className="field" style={{ marginTop: 14 }} placeholder="전화번호 (-없이 01000000000)" value={deliveryPhone} onChange={(e) => setDeliveryPhone(e.target.value)} />
-            <input className="field" style={{ marginTop: 14 }} placeholder="근무지로 배송회수(상호명 입력)" value={workplace} onChange={(e) => setWorkplace(e.target.value)} />
-            <p className="hint delivery-note" style={{ marginTop: 10 }}>* 피팅 정보, 배송 정보 수정은 &apos;내 정보&apos;에서 수정가능해요.</p>
-          </div>
-        )}
-
         {err && <div className="hint err">{err}</div>}
         {msg && <div className="hint" style={{ color: 'var(--sage)' }}>{msg}</div>}
         <button className="cta" disabled={busy} onClick={submit}>{busy ? '처리 중…' : '멤버십 결제 후 가입하기'}</button>
@@ -368,5 +245,13 @@ export default function SignupPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignupForm />
+    </Suspense>
   );
 }

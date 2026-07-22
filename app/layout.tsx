@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Cormorant_Garamond, Pinyon_Script, Tenor_Sans, Noto_Sans_KR } from 'next/font/google';
 import './globals.css';
 
@@ -36,6 +36,11 @@ const notoSansKr = Noto_Sans_KR({
 export const metadata: Metadata = {
   title: 'Lala — 룩북 대여',
   description: '하루를 위한 옷, 사지 않고 빌립니다.',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

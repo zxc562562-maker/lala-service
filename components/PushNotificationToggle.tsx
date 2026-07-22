@@ -2,13 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { savePushSubscription, removePushSubscription } from '@/lib/push-actions';
-
-function urlBase64ToUint8Array(base64String: string): Uint8Array {
-  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-  const rawData = atob(base64);
-  return Uint8Array.from([...rawData].map((c) => c.charCodeAt(0)));
-}
+import { urlBase64ToUint8Array } from '@/lib/push-client';
 
 export default function PushNotificationToggle() {
   const [supported, setSupported] = useState(true);
@@ -17,6 +11,8 @@ export default function PushNotificationToggle() {
   const [msg, setMsg] = useState<string | null>(null);
 
   useEffect(() => {
+    // navigator/window는 서버 렌더에 없어 여기(마운트 후)에서만 안전하게 감지 가능
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) { setSupported(false); return; }
     navigator.serviceWorker.register('/sw.js').then(async (reg) => {
       const existing = await reg.pushManager.getSubscription();
@@ -71,7 +67,7 @@ export default function PushNotificationToggle() {
       <label>알림</label>
       <button
         type="button"
-        className="cta ghost addr-btn"
+        className="cta ghost addr-btn push-toggle-btn"
         style={{ marginLeft: 'auto' }}
         disabled={busy}
         onClick={subscribed ? unsubscribe : subscribe}

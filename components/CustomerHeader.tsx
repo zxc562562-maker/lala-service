@@ -1,9 +1,9 @@
 import Link from 'next/link';
-import { supabaseServer } from '@/lib/supabase/server';
+import { getCachedUser } from '@/lib/auth-cache';
 import { signOut } from '@/lib/actions';
 
 export default async function CustomerHeader() {
-  const { data: { user } } = await supabaseServer().auth.getUser();
+  const user = await getCachedUser();
   const name = (user?.user_metadata as { name?: string } | undefined)?.name ?? user?.email ?? '';
 
   return (
@@ -18,9 +18,14 @@ export default async function CustomerHeader() {
             <>
               <span className="who">{name}님</span>
               <span className="nav-actions">
+                <Link href="/guide" className="nav-guide">User Guide</Link>
+                <span className="nav-dot" aria-hidden="true">·</span>
                 <Link href="/profile">내 정보</Link>
-                <Link href="/cart">CART</Link>
-                <Link href="/account">My 렌탈</Link>
+                <span className="nav-dot" aria-hidden="true">·</span>
+                <a href="/cart">CART</a>
+                <span className="nav-dot" aria-hidden="true">·</span>
+                <Link href="/account">내 렌탈</Link>
+                <span className="nav-dot" aria-hidden="true">·</span>
                 <form action={signOut}>
                   <button type="submit" className="linklike">로그아웃</button>
                 </form>

@@ -39,6 +39,22 @@ function rangesOverlap(aS: Date, aE: Date, bS: Date, bE: Date): boolean {
 }
 
 /**
+ * 실제 청구 대여일수. 예약일(체크아웃)~반납일 전날까지의 "보유한 밤" 중 휴무일은 빼고 센다.
+ * 예: 토(예약) → 일(휴무) → 월(반납) = 보유한 밤은 토·일 2박이지만 일요일이 휴무라 1일만 청구.
+ * 체크아웃 당일은 휴무일일 수 없으므로(캘린더에서 이미 선택 자체를 막음) 결과는 항상 1 이상.
+ */
+export function billableDays(checkout: DateStr, ret: DateStr, closedDates: Set<DateStr>): number {
+  const end = toDate(ret);
+  let cur = toDate(checkout);
+  let count = 0;
+  while (cur.getTime() < end.getTime()) {
+    if (!closedDates.has(iso(cur))) count++;
+    cur = addDays(cur, 1);
+  }
+  return count;
+}
+
+/**
  * 요청 기간이 유효한지 검사(형식/날짜순/최소일수/과거날짜). 잘못되면 Error를 던진다.
  * 카트·결제 화면에서 이미 1차 검증하지만, 웹훅 등 세션 비의존 경로에서도 같은 규칙을
  * 한 번 더 강제하기 위한 서버측 최종 방어선.

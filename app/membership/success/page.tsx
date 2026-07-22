@@ -7,19 +7,20 @@ import { confirmMembershipPayment } from '@/lib/membership-actions';
 
 function MembershipSuccessContent() {
   const p = useSearchParams();
-  const [state, setState] = useState<'loading' | 'ok' | 'fail'>('loading');
-  const [msg, setMsg] = useState('');
+  const paymentKey = p.get('paymentKey');
+  const orderId = p.get('orderId');
+  const amount = Number(p.get('amount'));
+  const paramsValid = !!(paymentKey && orderId && amount);
+
+  const [state, setState] = useState<'loading' | 'ok' | 'fail'>(paramsValid ? 'loading' : 'fail');
+  const [msg, setMsg] = useState(paramsValid ? '' : '결제 정보가 올바르지 않습니다.');
   const ran = useRef(false);
 
   useEffect(() => {
-    if (ran.current) return;
+    if (!paramsValid || ran.current) return;
     ran.current = true;
-    const paymentKey = p.get('paymentKey');
-    const orderId = p.get('orderId');
-    const amount = Number(p.get('amount'));
-    if (!paymentKey || !orderId || !amount) { setState('fail'); setMsg('결제 정보가 올바르지 않습니다.'); return; }
     (async () => {
-      const res = await confirmMembershipPayment(paymentKey, orderId, amount);
+      const res = await confirmMembershipPayment(paymentKey!, orderId!, amount);
       if (res.ok) setState('ok');
       else { setState('fail'); setMsg(res.reason); }
     })();

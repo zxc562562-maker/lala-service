@@ -1,6 +1,7 @@
 'use server';
 
 import { supabaseServer, supabaseAdmin } from './supabase/server';
+import { getCachedUser } from './auth-cache';
 import { sendPushToCustomer } from './push';
 
 export interface Profile {
@@ -10,14 +11,10 @@ export interface Profile {
   marketingLookbook: boolean;
   marketingPromotion: boolean;
   marketingDaily: boolean;
-  // 피팅 정보
-  heightCm: number | null;
-  topSize: string | null;
-  waistCm: number | null;
-  shoeSize: string | null;
   // 배송 정보
   deliveryAddress: string | null;
   deliveryJibun: string | null;
+  deliveryZonecode: string | null;
   deliveryDetailAddress: string | null;
   entrancePassword: string | null;
   returnAddress: string | null;
@@ -25,22 +22,25 @@ export interface Profile {
   returnDetailAddress: string | null;
   returnEntrancePassword: string | null;
   deliveryPhone: string | null;
+  deliveryRecipientName: string | null;
   workplace: string | null;
+  deliveryInStore: boolean;
+  returnInStore: boolean;
+  preferredDeliveryMethod: string | null;
 }
 
 export async function getProfile(): Promise<Profile | null> {
-  const userClient = supabaseServer();
-  const { data: { user } } = await userClient.auth.getUser();
+  const user = await getCachedUser();
   if (!user) return null;
+  const userClient = await supabaseServer();
   const { data } = await userClient
     .from('customer')
     .select(`
       username,name,phone,
       marketing_lookbook_consent,marketing_promotion_consent,marketing_daily_consent,
-      height_cm,top_size,waist_cm,shoe_size,
-      delivery_address,delivery_jibun_address,delivery_detail_address,entrance_password,
+      delivery_address,delivery_jibun_address,delivery_zonecode,delivery_detail_address,entrance_password,
       return_address,return_jibun_address,return_detail_address,return_entrance_password,
-      delivery_phone,workplace
+      delivery_phone,delivery_recipient_name,workplace,delivery_in_store,return_in_store,preferred_delivery_method
     `)
     .eq('auth_user_id', user.id).maybeSingle();
   return {
@@ -50,12 +50,9 @@ export async function getProfile(): Promise<Profile | null> {
     marketingLookbook: data?.marketing_lookbook_consent ?? false,
     marketingPromotion: data?.marketing_promotion_consent ?? false,
     marketingDaily: data?.marketing_daily_consent ?? false,
-    heightCm: data?.height_cm ?? null,
-    topSize: data?.top_size ?? null,
-    waistCm: data?.waist_cm ?? null,
-    shoeSize: data?.shoe_size ?? null,
     deliveryAddress: data?.delivery_address ?? null,
     deliveryJibun: data?.delivery_jibun_address ?? null,
+    deliveryZonecode: data?.delivery_zonecode ?? null,
     deliveryDetailAddress: data?.delivery_detail_address ?? null,
     entrancePassword: data?.entrance_password ?? null,
     returnAddress: data?.return_address ?? null,
@@ -63,7 +60,11 @@ export async function getProfile(): Promise<Profile | null> {
     returnDetailAddress: data?.return_detail_address ?? null,
     returnEntrancePassword: data?.return_entrance_password ?? null,
     deliveryPhone: data?.delivery_phone ?? null,
+    deliveryRecipientName: data?.delivery_recipient_name ?? null,
     workplace: data?.workplace ?? null,
+    deliveryInStore: data?.delivery_in_store ?? false,
+    returnInStore: data?.return_in_store ?? false,
+    preferredDeliveryMethod: data?.preferred_delivery_method ?? null,
   };
 }
 
@@ -74,14 +75,10 @@ export interface UpdateProfileInput {
   marketingPromotion: boolean;
   marketingDaily: boolean;
   newPassword?: string; // 입력했을 때만 변경
-  // 피팅 정보 (전부 선택)
-  heightCm?: string;
-  topSize?: string;
-  waistCm?: string;
-  shoeSize?: string;
   // 배송 정보 (전부 선택)
   deliveryAddress?: string;
   deliveryJibun?: string;
+  deliveryZonecode?: string;
   deliveryDetailAddress?: string;
   entrancePassword?: string;
   returnAddress?: string;
@@ -89,13 +86,16 @@ export interface UpdateProfileInput {
   returnDetailAddress?: string;
   returnEntrancePassword?: string;
   deliveryPhone?: string;
+  deliveryRecipientName?: string;
   workplace?: string;
+  deliveryInStore: boolean;
+  returnInStore: boolean;
 }
 
 export async function updateProfile(input: UpdateProfileInput): Promise<{ ok: boolean; reason?: string }> {
-  const userClient = supabaseServer();
-  const { data: { user } } = await userClient.auth.getUser();
+  const user = await getCachedUser();
   if (!user) return { ok: false, reason: '로그인이 필요합니다.' };
+  const userClient = await supabaseServer();
   if (!input.name.trim()) return { ok: false, reason: '이름을 입력해주세요.' };
   if (input.newPassword && input.newPassword.length < 4) {
     return { ok: false, reason: '비밀번호는 4자 이상이어야 해요.' };
@@ -107,9 +107,9 @@ export async function updateProfile(input: UpdateProfileInput): Promise<{ ok: bo
     .from('customer')
     .select(`
       id, marketing_lookbook_consent,marketing_promotion_consent,marketing_daily_consent,
-      delivery_address,delivery_jibun_address,delivery_detail_address,entrance_password,
+      delivery_address,delivery_jibun_address,delivery_zonecode,delivery_detail_address,entrance_password,
       return_address,return_jibun_address,return_detail_address,return_entrance_password,
-      delivery_phone,workplace
+      delivery_phone,delivery_recipient_name,workplace,delivery_in_store,return_in_store
     `)
     .eq('auth_user_id', user.id).maybeSingle();
   const now = new Date().toISOString();
@@ -117,10 +117,7 @@ export async function updateProfile(input: UpdateProfileInput): Promise<{ ok: bo
   const justPromotion = input.marketingPromotion && !before?.marketing_promotion_consent;
   const justDaily = input.marketingDaily && !before?.marketing_daily_consent;
 
-  const heightCm = input.heightCm?.trim() ? Number(input.heightCm) : null;
-  const waistCm = input.waistCm?.trim() ? Number(input.waistCm) : null;
-
-  // 이름/연락처/주소/마케팅 동의/피팅/배송 정보는 본인 세션(RLS "own customer update")으로 수정
+  // 이름/연락처/주소/마케팅 동의/배송 정보는 본인 세션(RLS "own customer update")으로 수정
   const { error: custError } = await userClient
     .from('customer')
     .update({
@@ -132,12 +129,9 @@ export async function updateProfile(input: UpdateProfileInput): Promise<{ ok: bo
       ...(justLookbook ? { marketing_lookbook_consent_at: now } : {}),
       ...(justPromotion ? { marketing_promotion_consent_at: now } : {}),
       ...(justDaily ? { marketing_daily_consent_at: now } : {}),
-      height_cm: heightCm,
-      top_size: input.topSize?.trim() || null,
-      waist_cm: waistCm,
-      shoe_size: input.shoeSize?.trim() || null,
       delivery_address: input.deliveryAddress?.trim() || null,
       delivery_jibun_address: input.deliveryJibun?.trim() || null,
+      delivery_zonecode: input.deliveryZonecode?.trim() || null,
       delivery_detail_address: input.deliveryDetailAddress?.trim() || null,
       entrance_password: input.entrancePassword?.trim() || null,
       return_address: input.returnAddress?.trim() || null,
@@ -145,7 +139,10 @@ export async function updateProfile(input: UpdateProfileInput): Promise<{ ok: bo
       return_detail_address: input.returnDetailAddress?.trim() || null,
       return_entrance_password: input.returnEntrancePassword?.trim() || null,
       delivery_phone: input.deliveryPhone?.trim() || null,
+      delivery_recipient_name: input.deliveryRecipientName?.trim() || null,
       workplace: input.workplace?.trim() || null,
+      delivery_in_store: input.deliveryInStore,
+      return_in_store: input.returnInStore,
     })
     .eq('auth_user_id', user.id);
   if (custError) return { ok: false, reason: '정보 저장에 실패했습니다.' };
@@ -155,6 +152,7 @@ export async function updateProfile(input: UpdateProfileInput): Promise<{ ok: bo
     const trackedFields: { key: string; label: string; oldVal: string | null; newVal: string | null }[] = [
       { key: 'delivery_address', label: '배송지 주소', oldVal: before.delivery_address, newVal: input.deliveryAddress?.trim() || null },
       { key: 'delivery_jibun_address', label: '배송지 지번주소', oldVal: before.delivery_jibun_address, newVal: input.deliveryJibun?.trim() || null },
+      { key: 'delivery_zonecode', label: '배송지 우편번호', oldVal: before.delivery_zonecode, newVal: input.deliveryZonecode?.trim() || null },
       { key: 'delivery_detail_address', label: '배송지 세부주소', oldVal: before.delivery_detail_address, newVal: input.deliveryDetailAddress?.trim() || null },
       { key: 'entrance_password', label: '배송지 공동현관 비밀번호', oldVal: before.entrance_password, newVal: input.entrancePassword?.trim() || null },
       { key: 'return_address', label: '회수지 주소', oldVal: before.return_address, newVal: input.returnAddress?.trim() || null },
@@ -163,6 +161,9 @@ export async function updateProfile(input: UpdateProfileInput): Promise<{ ok: bo
       { key: 'return_entrance_password', label: '회수지 공동현관 비밀번호', oldVal: before.return_entrance_password, newVal: input.returnEntrancePassword?.trim() || null },
       { key: 'workplace', label: '근무지', oldVal: before.workplace, newVal: input.workplace?.trim() || null },
       { key: 'delivery_phone', label: '배송 연락처', oldVal: before.delivery_phone, newVal: input.deliveryPhone?.trim() || null },
+      { key: 'delivery_recipient_name', label: '받는 사람', oldVal: before.delivery_recipient_name, newVal: input.deliveryRecipientName?.trim() || null },
+      { key: 'delivery_in_store', label: '직접 매장 픽업', oldVal: before.delivery_in_store ? '예' : '아니오', newVal: input.deliveryInStore ? '예' : '아니오' },
+      { key: 'return_in_store', label: '직접 매장 회수', oldVal: before.return_in_store ? '예' : '아니오', newVal: input.returnInStore ? '예' : '아니오' },
     ];
     const changed = trackedFields.filter((f) => (f.oldVal ?? null) !== (f.newVal ?? null));
     if (changed.length > 0) {
@@ -203,7 +204,7 @@ export type WithdrawResult =
  *    - Supabase Auth 사용자 삭제 (customer.auth_user_id는 ON DELETE SET NULL이라 로그인 불가 상태로 남음)
  */
 export async function withdrawAccount(password: string): Promise<WithdrawResult> {
-  const userClient = supabaseServer();
+  const userClient = await supabaseServer();
   const { data: { user } } = await userClient.auth.getUser();
   if (!user || !user.email) return { ok: false, reason: '로그인이 필요합니다.' };
 
@@ -228,7 +229,7 @@ export async function withdrawAccount(password: string): Promise<WithdrawResult>
     return {
       ok: false,
       blockedByDispute: true,
-      reason: '해결되지 않은 분쟁 중인 주문이 있어 탈퇴할 수 없습니다. My 렌탈에서 해당 주문의 분쟁이 해결된 후 다시 시도해주세요.',
+      reason: '해결되지 않은 분쟁 중인 주문이 있어 탈퇴할 수 없습니다. 내 렌탈에서 해당 주문의 분쟁이 해결된 후 다시 시도해주세요.',
     };
   }
 

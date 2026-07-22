@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
   const next = searchParams.get('next') ?? '/';
 
   if (token_hash && type) {
-    const supabase = supabaseServer();
+    const supabase = await supabaseServer();
     const { error } = await supabase.auth.verifyOtp({ type, token_hash });
     if (!error) {
       return NextResponse.redirect(new URL(next, request.url));

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabaseBrowser } from '@/lib/supabase/client';
 import { approveMember, rejectMember, type PendingMember } from '@/lib/roles-actions';
@@ -8,6 +8,7 @@ import { approveMember, rejectMember, type PendingMember } from '@/lib/roles-act
 export default function AdminApprovals({ pending }: { pending: PendingMember[] }) {
   const router = useRouter();
   const [busy, startTransition] = useTransition();
+  const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
     const sb = supabaseBrowser();
@@ -18,11 +19,19 @@ export default function AdminApprovals({ pending }: { pending: PendingMember[] }
   }, [router]);
 
   function ok(id: string) { startTransition(async () => { await approveMember(id); router.refresh(); }); }
-  function no(id: string) { startTransition(async () => { await rejectMember(id); router.refresh(); }); }
+  function no(id: string) {
+    setErr(null);
+    startTransition(async () => {
+      const res = await rejectMember(id);
+      if (!res.ok && res.reason) setErr(res.reason);
+      router.refresh();
+    });
+  }
 
   return (
     <section>
       <h1 className="staff-title">가입 승인 <span className="rt-dot" title="실시간">●</span></h1>
+      {err && <p className="hint err">{err}</p>}
       {pending.length === 0 && <p className="staff-empty">대기 중인 가입 신청이 없어요.</p>}
       <div className="order-list">
         {pending.map((m) => (
