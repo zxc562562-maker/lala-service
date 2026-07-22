@@ -216,7 +216,7 @@
    반복해야 하는 문제를 없앰(각자 독립적으로 원하는 달로 바로 이동). */
 .account-filter-box-wrap{position:relative;flex:1;min-width:0}
 /* 클릭 영역을 박스 전체로(예전엔 달력 아이콘 부분만 클릭되던 문제 해소) */
-.account-filter-box{width:100%;text-align:left;padding:9px 12px;border:1px solid var(--line);border-radius:3px;background:var(--card);font-family:var(--sans);font-size:13px;color:var(--ink);cursor:pointer}
+.account-filter-box{width:100%;text-align:left;padding:9px 12px;border:1px solid var(--line);border-radius:3px;background:var(--card);font-family:var(--sans);font-size:13px;color:var(--ink);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .account-filter-sep{color:var(--muted);flex-shrink:0}
 .account-filter-btn{width:auto;margin-top:0;padding:9px 14px;font-size:13px;flex-shrink:0}
 /* 각 박스와 같은(좁은) 너비로, 바로 아래에 펼쳐지는 커스텀 달력 — 연/월 휠·요일 그리드를

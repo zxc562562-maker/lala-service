@@ -21,6 +21,11 @@ function monthOf(dateStr: string | null): Date {
   return new Date(Date.UTC(base.getUTCFullYear(), base.getUTCMonth(), 1));
 }
 
+const DOW = ['일', '월', '화', '수', '목', '금', '토'];
+function withDow(dateStr: string): string {
+  return `${dateStr} (${DOW[toDate(dateStr).getUTCDay()]})`;
+}
+
 // 아이폰 달력 조회 스타일의 스크롤 휠 — 스크롤이 멈추면(설정 시간 동안 추가 스크롤 없으면)
 // 가장 가까운 항목으로 스냅하고 그 값을 확정한다.
 function WheelColumn({ items, value, suffix, onChange }: {
@@ -178,7 +183,7 @@ export default function AccountDateFilter({
     <div className="account-filter-wrap" ref={wrapRef}>
       <div className="account-filter">
         <div className="account-filter-box-wrap">
-          <button type="button" className="account-filter-box" onClick={toggleFrom}>{from ?? '시작일'}</button>
+          <button type="button" className="account-filter-box" onClick={toggleFrom}>{from ? withDow(from) : '시작일'}</button>
           {openField === 'from' && (
             <MiniCalendar
               month={fromMonth}
@@ -190,7 +195,7 @@ export default function AccountDateFilter({
         </div>
         <span className="account-filter-sep">~</span>
         <div className="account-filter-box-wrap">
-          <button type="button" className="account-filter-box" onClick={toggleTo}>{to ?? '종료일'}</button>
+          <button type="button" className="account-filter-box" onClick={toggleTo}>{to ? withDow(to) : '종료일'}</button>
           {openField === 'to' && (
             <MiniCalendar
               month={toMonth}
