@@ -10,7 +10,8 @@ const won = (n: number) => n.toLocaleString('ko-KR') + '원';
 
 const NORMAL_LABEL: Record<string, string> = {
   ORDERED: '주문결제', PRE_INSPECTING: '상품검수중', READY: '배송대기중', SHIPPED: '배송중',
-  DELIVERED: '배송완료', RETURN_REQUESTED: '반납접수 요청됨', RETURN_INSPECTING: '반납검수중', REFUNDED: '완료', CANCELLED: '취소됨',
+  DELIVERED: '배송완료', RETURN_REQUESTED: '반납접수 요청됨', RETURN_INSPECTING: '반납검수중', REFUNDED: '반납 완료',
+  DEPOSIT_REFUNDED: '보증금 환불 완료', CANCELLED: '취소됨',
 };
 const PROBLEM_LABEL: Record<string, string> = {
   PRE_INSPECT_ISSUE: '상품검수중 오염, 손상 확인', MISDELIVERED: '오배송', RETURN_ISSUE: '반납검수중 오염, 손상 확인',

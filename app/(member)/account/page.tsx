@@ -16,7 +16,8 @@ const CANCELLABLE_FULFILLMENT_STATUSES = ['ORDERED', 'PRE_INSPECTING', 'READY'];
 // 정상 진행 흐름(8단계): 주문결제 → 상품검수중 → 배송대기중 → 배송중 → 배송완료 → 반납접수 요청됨 → 반납검수중 → 완료
 const NORMAL_LABEL: Record<string, string> = {
   ORDERED: '주문결제', PRE_INSPECTING: '상품검수중', READY: '배송대기중', SHIPPED: '배송중',
-  DELIVERED: '배송완료', RETURN_REQUESTED: '반납접수 요청됨', RETURN_INSPECTING: '반납검수중', REFUNDED: '완료', CANCELLED: '취소됨',
+  DELIVERED: '배송완료', RETURN_REQUESTED: '반납접수 요청됨', RETURN_INSPECTING: '반납검수중', REFUNDED: '반납 완료',
+  DEPOSIT_REFUNDED: '보증금 환불 완료', CANCELLED: '취소됨',
 };
 // 문제 발생 분기(레드 계열로 구분 표시)
 const PROBLEM_LABEL: Record<string, string> = {
