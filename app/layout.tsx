@@ -34,7 +34,7 @@ const notoSansKr = Noto_Sans_KR({
 });
 
 export const metadata: Metadata = {
-  title: 'Lala — 룩북 대여',
+  title: 'Lala - Service',
   description: '하루를 위한 옷, 사지 않고 빌립니다.',
 };
 
