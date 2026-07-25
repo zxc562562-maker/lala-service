@@ -6,38 +6,23 @@ export interface LookImage { url: string }
 
 export interface Look {
   id: string;
-  title: string;
-  cat: string;   // 성격(occasion)
-  desc: string;
   coverUrl: string | null; // 목록 카드용
-  images: LookImage[];     // 상세 페이지 갤러리(최대 6장)
-  items: string[];         // 구성 상품명(product.name) — 사이즈별 재고 조회는 이 이름 기준으로 이뤄짐
+  images: LookImage[];     // 상세 페이지 갤러리
 }
 
-export const MAX_LOOK_IMAGES = 6;
-
 interface LookRow {
-  id: string; title: string; cat: string; description: string; cover_path: string | null;
+  id: string; cover_path: string | null;
   look_image: { path: string; position: number }[];
-  look_item: { position: number; product: { name: string } | null }[];
 }
 
 function mapLook(r: LookRow): Look {
   const images = [...(r.look_image ?? [])]
     .sort((a, b) => a.position - b.position)
     .map((i) => ({ url: getLookImageUrl(i.path)! }));
-  const items = [...(r.look_item ?? [])]
-    .sort((a, b) => a.position - b.position)
-    .filter((i) => i.product)
-    .map((i) => i.product!.name);
-  return {
-    id: r.id, title: r.title, cat: r.cat, desc: r.description,
-    coverUrl: getLookImageUrl(r.cover_path),
-    images, items,
-  };
+  return { id: r.id, coverUrl: getLookImageUrl(r.cover_path), images };
 }
 
-const LOOK_SELECT = 'id,title,cat,description,cover_path,look_image(path,position),look_item(position,product:product_id(name))';
+const LOOK_SELECT = 'id,cover_path,look_image(path,position)';
 
 // 룩 목록도 상품 카탈로그와 마찬가지로 모든 방문자에게 동일한 공개 데이터라 30초 캐시한다
 // (queries.ts의 getProducts와 같은 이유 — 동시접속 시 매번 실 DB 조회로 느려지는 걸 방지).
