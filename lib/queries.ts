@@ -104,6 +104,20 @@ export async function getItemsAndReservations(
 
 // ---- 룩북(lookbook) ----
 /** 상품명 배열로 상품들을 조회 (룩 구성 순서 유지). 같은 이름(스타일)에 사이즈별 여러 행이 있어도 대표로 1개만 반환. */
+export async function getProductsByNames(names: string[]): Promise<Product[]> {
+  if (names.length === 0) return [];
+  const sb = supabaseAdmin();
+  const { data, error } = await sb
+    .from('product')
+    .select('id,name,brand,category,size,daily_price,deposit,color_1,color_2')
+    .in('name', names);
+  if (error) throw error;
+  const rows = (data as ProductRow[]).map(mapProduct);
+  return names
+    .map((n) => rows.find((p) => p.name === n)) // 이름당 첫 번째(대표 사이즈)만
+    .filter((p): p is Product => !!p);
+}
+
 export interface SizeOption { size: string; available: boolean; productId: string }
 
 /**
