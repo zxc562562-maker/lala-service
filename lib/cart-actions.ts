@@ -3,8 +3,10 @@
 import { revalidatePath } from 'next/cache';
 import { supabaseAdmin } from '@lala/shared/lib/supabase/server';
 import { getCachedUser } from '@lala/shared/lib/auth-cache';
+import { getClosedDates } from '@lala/shared/lib/closure-actions';
 import { getReservationsForProductIds, getSizeAvailabilityForRange as _getSizeAvailabilityForRange, getSizeAvailabilityByNames as _getSizeAvailabilityByNames, type SizeOption } from './queries';
 import { expandUnavailableDates } from '@lala/shared/lib/domain/reservation';
+import type { Profile } from './account-actions';
 
 export interface CartLine {
   id: string;        // cart_item id
@@ -149,4 +151,94 @@ export async function getCartBusyDates(items?: CartLine[]): Promise<string[]> {
   const cartItems = items ?? await getCartItems();
   const reservations = await getReservationsForProductIds(cartItems.map((i) => i.productId));
   return Array.from(expandUnavailableDates(reservations));
+}
+
+export interface CartPageData {
+  items: CartLine[];
+  busyDates: string[];
+  closedDates: string[];
+  otherConflicts: Set<string>;
+  profile: Profile | null;
+}
+
+/**
+ * 카트 페이지가 처음 열릴 때 필요한 데이터를 한 번에 가져온다. getCartItems/getOtherCartConflicts/
+ * getProfile을 따로따로 부르면 로그인 확인(auth.getUser, 실제 네트워크 왕복)이 각 서버 액션 호출마다
+ * 중복으로 나가서(React cache()는 같은 요청 안에서만 적용되고, 클라이언트에서 쏘는 별도의 서버 액션
+ * 호출끼리는 묶이지 않음) 체감 로딩이 눈에 띄게 느려진다 — 로그인 확인은 한 번만 하고 나머지 조회를
+ * 병렬로 묶는다.
+ */
+export async function getCartPageData(): Promise<CartPageData> {
+  const customerId = await resolveCustomerId();
+  if (!customerId) return { items: [], busyDates: [], closedDates: [], otherConflicts: new Set(), profile: null };
+
+  const sb = supabaseAdmin();
+  const [{ data: cartRows }, { data: profileRow }, closedDates] = await Promise.all([
+    sb.from('cart_item')
+      .select('id,product:product_id(id,name,size,daily_price,deposit,color_1,color_2)')
+      .eq('customer_id', customerId)
+      .order('created_at', { ascending: true }),
+    sb.from('customer').select(`
+      username,name,phone,
+      marketing_lookbook_consent,marketing_promotion_consent,marketing_daily_consent,
+      delivery_address,delivery_jibun_address,delivery_zonecode,delivery_detail_address,entrance_password,
+      return_address,return_jibun_address,return_detail_address,return_entrance_password,
+      delivery_phone,delivery_recipient_name,workplace,delivery_in_store,return_in_store,preferred_delivery_method
+    `).eq('id', customerId).maybeSingle(),
+    getClosedDates(),
+  ]);
+
+  const items: CartLine[] = ((cartRows ?? []) as unknown as {
+    id: string;
+    product: { id: string; name: string; size: string; daily_price: number; deposit: number; color_1: string | null; color_2: string | null };
+  }[]).map((r) => ({
+    id: r.id,
+    productId: r.product.id,
+    name: r.product.name,
+    size: r.product.size,
+    dailyPrice: r.product.daily_price,
+    deposit: r.product.deposit,
+    c1: r.product.color_1 ?? '#3B2230',
+    c2: r.product.color_2 ?? '#6B2737',
+  }));
+
+  const productIds = items.map((i) => i.productId);
+  const [reservations, conflictRows] = await Promise.all([
+    getReservationsForProductIds(productIds),
+    productIds.length
+      ? sb.from('cart_item').select('product_id').in('product_id', productIds).neq('customer_id', customerId).then((r) => r.data ?? [])
+      : Promise.resolve([] as { product_id: string }[]),
+  ]);
+
+  const profile: Profile = {
+    username: profileRow?.username ?? '',
+    name: profileRow?.name ?? '',
+    phone: profileRow?.phone ?? null,
+    marketingLookbook: profileRow?.marketing_lookbook_consent ?? false,
+    marketingPromotion: profileRow?.marketing_promotion_consent ?? false,
+    marketingDaily: profileRow?.marketing_daily_consent ?? false,
+    deliveryAddress: profileRow?.delivery_address ?? null,
+    deliveryJibun: profileRow?.delivery_jibun_address ?? null,
+    deliveryZonecode: profileRow?.delivery_zonecode ?? null,
+    deliveryDetailAddress: profileRow?.delivery_detail_address ?? null,
+    entrancePassword: profileRow?.entrance_password ?? null,
+    returnAddress: profileRow?.return_address ?? null,
+    returnJibun: profileRow?.return_jibun_address ?? null,
+    returnDetailAddress: profileRow?.return_detail_address ?? null,
+    returnEntrancePassword: profileRow?.return_entrance_password ?? null,
+    deliveryPhone: profileRow?.delivery_phone ?? null,
+    deliveryRecipientName: profileRow?.delivery_recipient_name ?? null,
+    workplace: profileRow?.workplace ?? null,
+    deliveryInStore: profileRow?.delivery_in_store ?? false,
+    returnInStore: profileRow?.return_in_store ?? false,
+    preferredDeliveryMethod: profileRow?.preferred_delivery_method ?? null,
+  };
+
+  return {
+    items,
+    busyDates: Array.from(expandUnavailableDates(reservations)),
+    closedDates,
+    otherConflicts: new Set((conflictRows as { product_id: string }[]).map((r) => r.product_id)),
+    profile,
+  };
 }

@@ -3,12 +3,11 @@
 import { useEffect, useRef, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { getCartItems, getCartBusyDates, removeCartItem, getOtherCartConflicts, type CartLine } from '@/lib/cart-actions';
+import { getCartPageData, removeCartItem, type CartLine } from '@/lib/cart-actions';
 import { iso, toDate, addDays, todayISO, billableDays } from '@lala/shared/lib/domain/reservation';
 import { FLAT_DEPOSIT, PARCEL_ROUNDTRIP_FEE, QUICK_DELIVERY_FEE } from '@/lib/pricing';
 import { DELIVERY_SLOTS, DELIVERY_METHODS } from '@lala/shared/lib/delivery';
-import { getClosedDates } from '@lala/shared/lib/closure-actions';
-import { getProfile, type Profile } from '@/lib/account-actions';
+import type { Profile } from '@/lib/account-actions';
 import DeliveryInfoForm, { type DeliveryInfoFormHandle } from '@/components/DeliveryInfoForm';
 
 const won = (n: number) => n.toLocaleString('ko-KR') + '원';
@@ -34,18 +33,11 @@ export default function CartPage() {
   const deliveryFormRef = useRef<DeliveryInfoFormHandle>(null);
 
   async function refresh() {
-    const its = await getCartItems();
-    // 서로 의존하지 않는 나머지 조회는 순서대로 기다리지 않고 한꺼번에 요청한다
-    const [busyDates, closedDates, conflicts, prof] = await Promise.all([
-      getCartBusyDates(its),
-      getClosedDates(),
-      getOtherCartConflicts(its.map((i) => i.productId)),
-      getProfile(),
-    ]);
+    const { items: its, busyDates, closedDates, otherConflicts, profile: prof } = await getCartPageData();
     setItems(its);
     setBusy(new Set(busyDates));
     setClosed(new Set(closedDates));
-    setOtherCartConflicts(conflicts);
+    setOtherCartConflicts(otherConflicts);
     setProfile(prof);
     // 재주문 시 같은 배송 방법을 다시 고를 확률이 높아, 마지막으로 쓴 방법을 기본 선택해준다
     // (이미 이번 세션에서 직접 고른 값이 있으면 덮어쓰지 않음).
