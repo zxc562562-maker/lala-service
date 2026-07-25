@@ -43,7 +43,7 @@ const LOOK_SELECT = 'id,title,cat,description,cover_path,look_image(path,positio
 // (queries.ts의 getProducts와 같은 이유 — 동시접속 시 매번 실 DB 조회로 느려지는 걸 방지).
 async function fetchLooks(): Promise<Look[]> {
   const sb = supabaseAdmin();
-  const { data, error } = await sb.from('look').select(LOOK_SELECT).order('position', { ascending: true });
+  const { data, error } = await sb.from('look').select(LOOK_SELECT).order('created_at', { ascending: false });
   if (error || !data) return [];
   return (data as unknown as LookRow[]).map(mapLook);
 }
