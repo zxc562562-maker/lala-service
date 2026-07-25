@@ -57,8 +57,10 @@ function LoginForm() {
       <div className="or-divider"><span>또는 ID로 로그인</span></div>
 
       <div className="auth-form">
-        <input className="field" placeholder="ID" value={id} onChange={(e) => setId(e.target.value)} />
-        <input className="field" type="password" placeholder="비밀번호" value={password} onChange={(e) => setPassword(e.target.value)} />
+        <input className="field" placeholder="ID" value={id} onChange={(e) => setId(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && submit()} />
+        <input className="field" type="password" placeholder="비밀번호" value={password} onChange={(e) => setPassword(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && submit()} />
         <label className="remember-row">
           <span>자동로그인</span>
           <span className="ios-toggle">
