@@ -254,9 +254,11 @@
 
 /* ===== 룩북(lookbook) ===== */
 /* 모바일 앱 전용이라 데스크톱 폭(≥640px) 전용 2열 분기는 두지 않음 — 항상 1열(단일) 기준. */
-html{scroll-snap-type:y mandatory;scroll-padding-top:152px}
+/* 헤더 실측 높이(102.4px, Pretendard 로드 후 기준)에 맞춘 값 — 이 값이 어긋나면 "한 개씩 보기"에서
+   스크롤 스냅 위치가 몇 px씩 밀려 이전 룩의 끝자락이 살짝 보이는 문제가 생긴다. */
+html{scroll-snap-type:y mandatory;scroll-padding-top:154px}
 .look-grid{display:grid;grid-template-columns:1fr;gap:0;margin:0 -28px}
-.look-view-toggle{display:flex;justify-content:flex-end;gap:0;position:sticky;top:94px;z-index:15;background:var(--paper);margin:0 -28px;padding:9px 24px 9px 0;border-bottom:1px solid var(--line)}
+.look-view-toggle{display:flex;justify-content:flex-end;gap:0;position:sticky;top:103px;z-index:15;background:var(--paper);margin:0 -28px;padding:9px 24px 9px 0;border-bottom:1px solid var(--line)}
 .look-view-btn{width:32px;height:32px;border:none;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);padding:0}
 .look-view-btn.on{color:var(--espresso)}
 .look-view-btn.locked{opacity:.35}
@@ -267,7 +269,7 @@ html{scroll-snap-type:y mandatory;scroll-padding-top:152px}
 .look-cover{aspect-ratio:4/5;border-radius:3px;border:1px solid var(--line);display:block;width:100%;object-fit:cover}
 .look-meta{padding:10px 2px 0}
 /* 한 개씩 보기: 룩 1개가 화면을 거의 꽉 채우고, 스크롤하면 다음 룩으로 스냅 */
-.look-grid:not(.look-grid-triple) .look-cover{aspect-ratio:auto;height:calc(100dvh - 152px);scroll-snap-align:start}
+.look-grid:not(.look-grid-triple) .look-cover{aspect-ratio:auto;height:calc(100dvh - 154px);scroll-snap-align:start}
 .look-title{font-family:var(--sans);font-size:16px;letter-spacing:.04em;color:var(--espresso)}
 .look-sub{font-size:11.5px;color:var(--muted);margin-top:3px}
 .look-detail{padding-top:6px}
