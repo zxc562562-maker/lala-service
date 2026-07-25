@@ -3,7 +3,7 @@
 import { useEffect, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { LOOKS } from '@/lib/looks';
+import type { Look } from '@/lib/looks';
 import { addCartItem } from '@/lib/cart-actions';
 import type { Product } from '@lala/shared/lib/types';
 import type { SizeOption } from '@/lib/queries';
@@ -13,9 +13,10 @@ type ViewMode = 'single' | 'triple' | 'products';
 const won = (n: number) => n.toLocaleString('ko-KR') + '원';
 
 export default function LookGrid({
-  isLoggedIn, products, inCart, sizeMap,
+  isLoggedIn, looks, products, inCart, sizeMap,
 }: {
   isLoggedIn: boolean;
+  looks: Look[];
   products: Product[];
   inCart: string[];
   sizeMap: Record<string, SizeOption[]>;
@@ -63,16 +64,21 @@ export default function LookGrid({
     });
   }
 
-  const visible = isLoggedIn ? LOOKS : LOOKS.slice(0, 9);
-  const locked = isLoggedIn ? [] : LOOKS.slice(9);
+  const visible = isLoggedIn ? looks : looks.slice(0, 9);
+  const locked = isLoggedIn ? [] : looks.slice(9);
   const gridClass = viewMode === 'triple' ? 'look-grid look-grid-triple' : 'look-grid';
 
   const categories = Array.from(new Set(products.map((p) => p.category)));
   const visibleProducts = selectedCategory ? products.filter((p) => p.category === selectedCategory) : products;
 
-  const card = (l: (typeof LOOKS)[number]) => (
+  const card = (l: Look) => (
     <Link key={l.id} href={`/looks/${l.id}`} className="look-card">
-      <div className="look-cover" style={{ background: `linear-gradient(160deg, ${l.c2}, ${l.c1})` }} />
+      {l.coverUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={l.coverUrl} alt="" className="look-cover" />
+      ) : (
+        <div className="look-cover" style={{ background: 'linear-gradient(160deg, #6B2737, #3B2230)' }} />
+      )}
     </Link>
   );
 

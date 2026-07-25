@@ -264,7 +264,7 @@ html{scroll-snap-type:y mandatory;scroll-padding-top:152px}
 .look-grid-triple .look-cover{aspect-ratio:3/4;border-radius:2px;border:none}
 .look-grid-triple .look-meta{display:none}
 .look-card{display:block;cursor:pointer;text-decoration:none;color:inherit}
-.look-cover{aspect-ratio:3/4;border-radius:3px;border:1px solid var(--line)}
+.look-cover{aspect-ratio:3/4;border-radius:3px;border:1px solid var(--line);display:block;width:100%;object-fit:cover}
 .look-meta{padding:10px 2px 0}
 /* 한 개씩 보기: 룩 1개가 화면을 거의 꽉 채우고, 스크롤하면 다음 룩으로 스냅 */
 .look-grid:not(.look-grid-triple) .look-cover{aspect-ratio:auto;height:calc(100dvh - 152px);scroll-snap-align:start}
@@ -274,7 +274,7 @@ html{scroll-snap-type:y mandatory;scroll-padding-top:152px}
 /* 룩 상세 대표 이미지 — 스와이프 캐러셀 대신 세로로 나열 */
 .look-gallery-wrap{margin:0 -28px}
 .look-gallery-list{display:flex;flex-direction:column;gap:2px}
-.look-gallery-item{width:100%;aspect-ratio:3/4}
+.look-gallery-item{width:100%;aspect-ratio:3/4;display:block;object-fit:cover}
 .look-h{font-family:var(--sans);font-size:20px;letter-spacing:.04em;text-align:center;margin-top:16px;color:var(--espresso)}
 .look-desc{font-size:12.5px;color:#4A4146;text-align:center;margin:8px auto 0;line-height:1.7;max-width:34ch}
 .look-items-label{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:24px 0 12px}

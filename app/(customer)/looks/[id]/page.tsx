@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function LookPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
-  const look = getLook(params.id);
+  const look = await getLook(params.id);
   if (!look) notFound();
 
   const user = await getCachedUser();
