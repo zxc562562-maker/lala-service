@@ -40,9 +40,10 @@ export default function LookItems({
         })}
       </div>
 
-      <a className="cta look-cart-cta" href="/cart">
-        CHECK THE CART
-      </a>
+      <div className="look-detail-actions">
+        <Link className="cta look-cart-cta outline" href="/looks">룩북 보기</Link>
+        <a className="cta look-cart-cta" href="/cart">CHECK THE CART</a>
+      </div>
     </>
   );
 }

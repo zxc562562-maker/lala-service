@@ -14,7 +14,7 @@ export default async function MemberLayout({ children }: { children: React.React
   return (
     <>
       <CustomerHeader />
-      <main className="wrap">{children}</main>
+      <main className="wrap page-with-account-footer">{children}</main>
       <CustomerFooterNav />
       <PushPermissionPrompt />
     </>

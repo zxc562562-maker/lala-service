@@ -56,17 +56,21 @@ export default function LookGrid({
     // 흘려보낸다(헤더/툴바 실측 102.4px+51px = 154px가 예전 하드코딩값이었던 자리).
     const header = document.querySelector<HTMLElement>('.site-header');
     const toggle = document.querySelector<HTMLElement>('.look-view-toggle');
+    const footer = document.querySelector<HTMLElement>('.site-footer-nav');
     if (!header || !toggle) return;
     const update = () => {
       const headerH = header.getBoundingClientRect().height;
       const toggleH = toggle.getBoundingClientRect().height;
+      const footerH = footer?.getBoundingClientRect().height ?? 0;
       document.documentElement.style.setProperty('--header-h', `${headerH}px`);
       document.documentElement.style.setProperty('--scroll-offset', `${headerH + toggleH}px`);
+      document.documentElement.style.setProperty('--footer-h', `${footerH}px`);
     };
     update();
     const ro = new ResizeObserver(update);
     ro.observe(header);
     ro.observe(toggle);
+    if (footer) ro.observe(footer);
     return () => ro.disconnect();
   }, []);
   function changeView(mode: ViewMode) {

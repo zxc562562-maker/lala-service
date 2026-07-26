@@ -5,7 +5,7 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
   return (
     <>
       <CustomerHeader />
-      <main className="wrap">{children}</main>
+      <main className="wrap page-with-account-footer">{children}</main>
       <CustomerFooterNav />
     </>
   );

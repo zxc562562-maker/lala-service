@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { updateProfile, withdrawAccount, type Profile } from '@/lib/account-actions';
+import { signOut } from '@/lib/actions';
 import PushNotificationToggle from './PushNotificationToggle';
 import DeliveryInfoForm from './DeliveryInfoForm';
 import { formatPhone } from '@/lib/phone-format';
@@ -127,8 +128,9 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
           </span>
         </label>
 
-        {/* 정보 항목이 늘어나도 탈퇴하기는 항상 맨 아래에 위치 */}
+        {/* 정보 항목이 늘어나도 로그아웃·탈퇴하기는 항상 맨 아래에 위치 */}
         <div className="pf-foot">
+          <a className="pf-withdraw" onClick={() => startTransition(async () => { await signOut(); })}>로그아웃</a>
           <a className="pf-withdraw" onClick={openWithdraw}>탈퇴하기</a>
         </div>
 
