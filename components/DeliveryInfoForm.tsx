@@ -683,7 +683,10 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
 
           {!restrictedToHome && !sameAsDelivery && (
             <>
-              <p className="hint return-addr-hint" style={{ marginTop: 14 }}>반납 장소가 불분명한 경우에는 비워두시고 카카오톡 채널로 연락 주세요.</p>
+              <p className="hint return-addr-hint" style={{ marginTop: 14 }}>
+                반납 장소는 반납일 낮 12:00 전까지 입력하셔야 해요.<br />
+                낮 12:00 이후 반납 장소 입력시 추가금액이 발생될 수 있어요.
+              </p>
               <div className="field-section-row" style={{ marginTop: 0 }}>
                 <div className="field-section" style={{ margin: 0 }}>반납 주소</div>
                 {renderAddressPills('return')}
@@ -772,7 +775,7 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
             </label>
 
             <label className="toggle-group-item">
-              <span>이 근무지에서 반납</span>
+              <span>반납 주소 동일</span>
               <span className="ios-toggle">
                 <input type="checkbox" checked={sameAsWorkplaceDelivery} onChange={(e) => setSameAsWorkplaceDelivery(e.target.checked)} />
                 <span className="ios-slider" />
@@ -782,7 +785,7 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
 
           {!sameAsWorkplaceDelivery && (
             <>
-              <p className="hint return-addr-hint" style={{ marginTop: 14, textAlign: 'right' }}>
+              <p className="hint return-addr-hint" style={{ marginTop: 14 }}>
                 반납 장소는 반납일 낮 12:00 전까지 입력하셔야 해요.<br />
                 낮 12:00 이후 반납 장소 입력시 추가금액이 발생될 수 있어요.
               </p>

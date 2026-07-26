@@ -67,14 +67,13 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderId
   return (
     <section className="detail">
       <div className="order-detail-plain" style={{ marginTop: 16 }}>
+        <div className="row"><span>주문일시</span><span>{new Date(order.created_at).toLocaleString('ko-KR')}</span></div>
         <div className="row"><span>예약일 – 반납일</span><span>{order.checkout} – {order.return_date} ({order.days}일)</span></div>
-        <div className="row"><span>결제 상태</span><span>{order.status === 'PAID' ? '결제완료' : order.status === 'CANCELLED' ? '취소·환불완료' : order.status}</span></div>
         <div className="row"><span className={`resv-status ${isProblem ? 'resv-problem' : ''}`} style={{ marginLeft: 'auto' }}>{statusLabel}</span></div>
         {response && <div className="row"><span className="resv-response" style={{ marginLeft: 'auto' }}>{response}</span></div>}
-        <div className="row"><span>주문일시</span><span>{new Date(order.created_at).toLocaleString('ko-KR')}</span></div>
       </div>
 
-      <div className="field-section" style={{ marginTop: 22 }}>포함 상품 ({rows.length}개)</div>
+      <div className="field-section" style={{ marginTop: 22 }}>렌탈 상품 ({rows.length}개)</div>
       <div className="order-item-list" style={{ marginTop: 10 }}>
         {rows.map((r) => {
           const p = r.inventory_item.product;
