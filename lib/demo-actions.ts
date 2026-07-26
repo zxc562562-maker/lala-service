@@ -36,9 +36,13 @@ export async function createDemoParcelOrder(): Promise<{ ok: true; orderId: stri
   if (orderErr) return { ok: false, reason: `주문 생성 실패: ${orderErr.message}` };
 
   const { error: resvErr } = await sb.from('reservation').insert({
-    payment_order_id: orderId, item_id: item.id, checkout, return_date: returnDate, status: 'ACTIVE',
+    payment_order_id: orderId, customer_id: customer.id, item_id: item.id, checkout, return_date: returnDate, status: 'ACTIVE',
   });
-  if (resvErr) return { ok: false, reason: `예약 생성 실패: ${resvErr.message}` };
+  if (resvErr) {
+    // 예약 생성이 실패하면 방금 만든 주문만 덩그러니 남으니, 재시도 시 고아 데이터가 쌓이지 않게 같이 지운다.
+    await sb.from('payment_order').delete().eq('id', orderId);
+    return { ok: false, reason: `예약 생성 실패: ${resvErr.message}` };
+  }
 
   return { ok: true, orderId };
 }
