@@ -13,5 +13,6 @@ export default async function LooksPage() {
     getSizeAvailabilityByNames(products.map((p) => p.name)),
   ]);
   const inCart = inCartItems.map((c) => c.productId);
-  return <LookGrid isLoggedIn={!!user} looks={looks} products={products} inCart={inCart} sizeMap={sizeMap} />;
+  const name = (user?.user_metadata as { name?: string } | undefined)?.name ?? user?.email ?? '';
+  return <LookGrid isLoggedIn={!!user} name={name} looks={looks} products={products} inCart={inCart} sizeMap={sizeMap} />;
 }

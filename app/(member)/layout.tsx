@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import CustomerHeader from '@/components/CustomerHeader';
+import CustomerFooterNav from '@/components/CustomerFooterNav';
 import PushPermissionPrompt from '@/components/PushPermissionPrompt';
 import { getAccess } from '@lala/shared/lib/roles';
 
@@ -14,6 +15,7 @@ export default async function MemberLayout({ children }: { children: React.React
     <>
       <CustomerHeader />
       <main className="wrap">{children}</main>
+      <CustomerFooterNav />
       <PushPermissionPrompt />
     </>
   );

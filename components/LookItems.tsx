@@ -40,7 +40,7 @@ export default function LookItems({
         })}
       </div>
 
-      <a className="cta" href="/cart" style={{ display: 'block', textAlign: 'center', marginBottom: 15 }}>
+      <a className="cta look-cart-cta" href="/cart">
         CHECK THE CART
       </a>
     </>
