@@ -88,8 +88,9 @@
 .day.blank{visibility:hidden}
 .day.past{visibility:hidden}
 .day.busy .num{color:#D2CACC}
-.day.holiday .num{color:var(--wine)}
-.day.holiday.inrange .num{background:rgba(107,39,55,.12)}
+/* 휴업일(주말/공휴일/명절/임시휴무)은 핑크색 알약으로 표기 */
+.day.holiday .num{color:var(--wine);background:#F7D6E0}
+.day.holiday.inrange .num{background:#F0BBCC}
 .day.free{cursor:pointer}
 .day.free:hover .num{background:rgba(28,22,17,.06)}
 .day.sel .num{background:var(--espresso);color:#fff}

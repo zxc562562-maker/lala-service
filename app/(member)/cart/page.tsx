@@ -10,6 +10,7 @@ import { DELIVERY_SLOTS, DELIVERY_METHODS } from '@lala/shared/lib/delivery';
 import { updateProfile, type Profile } from '@/lib/account-actions';
 import { formatPhone } from '@/lib/phone-format';
 import { openAddressSearch } from '@/lib/address-search';
+import { listAddressBook, type AddressBookEntry } from '@/lib/address-book-actions';
 import DeliveryInfoForm, { type DeliveryInfoFormHandle } from '@/components/DeliveryInfoForm';
 
 const won = (n: number) => n.toLocaleString('ko-KR') + '원';
@@ -39,7 +40,32 @@ export default function CartPage() {
   const [pickupReturnAddress, setPickupReturnAddress] = useState('');
   const [pickupReturnJibun, setPickupReturnJibun] = useState('');
   const [pickupReturnDetailAddress, setPickupReturnDetailAddress] = useState('');
+  const [pickupReturnEntrancePassword, setPickupReturnEntrancePassword] = useState('');
+  const [pickupReturnMessage, setPickupReturnMessage] = useState('');
+  // 반납 요청 주소의 "기본 배송지"/"즐겨찾기" 알약 — 내 정보의 자택 주소록과 같은 목록을 공유한다.
+  const [pickupAddressBook, setPickupAddressBook] = useState<AddressBookEntry[]>([]);
+  const [showPickupBookModal, setShowPickupBookModal] = useState(false);
+  const [showPickupNoDefaultModal, setShowPickupNoDefaultModal] = useState(false);
   const deliveryFormRef = useRef<DeliveryInfoFormHandle>(null);
+
+  useEffect(() => {
+    listAddressBook().then(setPickupAddressBook);
+  }, []);
+
+  function fillPickupReturnFromEntry(e: AddressBookEntry) {
+    setPickupReturnAddress(e.address ?? '');
+    setPickupReturnJibun(e.jibun ?? '');
+    setPickupReturnDetailAddress(e.detailAddress ?? '');
+    setPickupReturnEntrancePassword(e.entrancePassword ?? '');
+    if (e.phone) setPickupPhone(e.phone);
+  }
+
+  function clickPickupDefaultPill() {
+    const def = pickupAddressBook.find((e) => e.mode === 'home' && e.isDefault);
+    if (def) fillPickupReturnFromEntry(def); else setShowPickupNoDefaultModal(true);
+  }
+
+  const pickupHomeEntries = pickupAddressBook.filter((e) => e.mode === 'home');
 
   // 직접 픽업 전화번호 입력란은 회원이 아직 손대지 않았을 때만 프로필 값으로 채워준다
   // (이미 이번 화면에서 직접 고친 값이 있으면 refresh() 이후에도 덮어쓰지 않음).
@@ -117,6 +143,8 @@ export default function CartPage() {
           returnAddress: pickupReturnRequested ? pickupReturnAddress : undefined,
           returnJibun: pickupReturnRequested ? pickupReturnJibun : undefined,
           returnDetailAddress: pickupReturnRequested ? pickupReturnDetailAddress : undefined,
+          returnEntrancePassword: pickupReturnRequested ? pickupReturnEntrancePassword : undefined,
+          returnMessage: pickupReturnRequested ? pickupReturnMessage : undefined,
         });
         if (!res.ok) { setErr(res.reason ?? '전화번호를 확인해주세요.'); return; }
       } else {
@@ -318,7 +346,7 @@ export default function CartPage() {
               />
             </div>
 
-            <div className="toggle-group-row" style={{ marginTop: 8 }}>
+            <div className="toggle-group-row" style={{ marginTop: 8, justifyContent: 'flex-end' }}>
               <label className="toggle-group-item">
                 <span>직접 반납</span>
                 <span className="ios-toggle">
@@ -337,7 +365,13 @@ export default function CartPage() {
 
             {pickupReturnRequested && (
               <>
-                <div className="field-section" style={{ marginTop: 8, marginBottom: 6 }}>반납 주소</div>
+                <div className="field-section-row" style={{ marginTop: 8 }}>
+                  <div className="field-section" style={{ margin: 0 }}>반납 주소</div>
+                  <div className="addr-pills">
+                    <button type="button" className="size-chip pickable" onClick={clickPickupDefaultPill}>기본 배송지</button>
+                    <button type="button" className="size-chip pickable" onClick={() => setShowPickupBookModal(true)}>즐겨찾기</button>
+                  </div>
+                </div>
                 <div className="addr-row">
                   <input className="field" placeholder="반납 주소" value={pickupReturnAddress} onChange={(e) => setPickupReturnAddress(e.target.value)} />
                   <button
@@ -354,8 +388,68 @@ export default function CartPage() {
                   value={pickupReturnDetailAddress}
                   onChange={(e) => setPickupReturnDetailAddress(e.target.value)}
                 />
+
+                <div className="phone-row" style={{ marginTop: 8, alignItems: 'center' }}>
+                  <span className="field-section field-section-plain" style={{ margin: 0, flexShrink: 0 }}>공동현관 비밀번호</span>
+                  <input
+                    className="field"
+                    style={{ textAlign: 'right' }}
+                    placeholder="자유 출입시 미기재"
+                    value={pickupReturnEntrancePassword}
+                    onChange={(e) => setPickupReturnEntrancePassword(e.target.value)}
+                  />
+                </div>
+
+                <div className="phone-row" style={{ marginTop: 8, alignItems: 'center' }}>
+                  <span className="field-section field-section-plain" style={{ margin: 0, flexShrink: 0 }}>배송 메시지</span>
+                  <input
+                    className="field"
+                    style={{ textAlign: 'right' }}
+                    value={pickupReturnMessage}
+                    onChange={(e) => setPickupReturnMessage(e.target.value)}
+                  />
+                </div>
               </>
             )}
+          </div>
+        )}
+
+        {showPickupBookModal && (
+          <div className="wd-ov" onClick={(e) => e.target === e.currentTarget && setShowPickupBookModal(false)}>
+            <div className="legal-box">
+              <div className="legal-title">즐겨찾기 (자택)</div>
+              <div className="legal-body">
+                <div className="addr-book-panel">
+                  {pickupHomeEntries.length === 0 && <p className="hint" style={{ margin: 0 }}>저장된 주소가 아직 없어요.</p>}
+                  {pickupHomeEntries.map((e) => (
+                    <div className="addr-book-item" key={e.id}>
+                      <button
+                        type="button"
+                        className="addr-book-info"
+                        onClick={() => { fillPickupReturnFromEntry(e); setShowPickupBookModal(false); }}
+                      >
+                        <div className="addr-book-label-row">
+                          <span className="addr-book-label-text">{e.label}</span>
+                          {e.isDefault && <span className="addr-book-default">기본 배송지</span>}
+                        </div>
+                        <div className="addr-book-summary">{[e.address, e.detailAddress].filter(Boolean).join(' ') || '(주소 없음)'}</div>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <button className="cta" style={{ width: '100%' }} onClick={() => setShowPickupBookModal(false)}>닫기</button>
+            </div>
+          </div>
+        )}
+
+        {showPickupNoDefaultModal && (
+          <div className="wd-ov" onClick={(e) => e.target === e.currentTarget && setShowPickupNoDefaultModal(false)}>
+            <div className="wd-box">
+              <div className="wd-title">기본 배송지가 없어요</div>
+              <p className="wd-desc">기본배송지가 등록되어 있지않아요.</p>
+              <button className="cta" style={{ width: '100%' }} onClick={() => setShowPickupNoDefaultModal(false)}>확인</button>
+            </div>
           </div>
         )}
       </div>

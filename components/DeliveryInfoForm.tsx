@@ -75,7 +75,8 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
   useEffect(() => {
     if (!showModeButtons) { setMode(null); return; }
     if (!autoSelectMode) return;
-    const fallback = restrictedToHome ? (initMode === 'home' ? 'home' : null) : initMode;
+    // 퀵배송·택배는 자택 말고 고를 게 없어 버튼 자체를 없애고 바로 입력란을 연다.
+    const fallback = restrictedToHome ? 'home' : initMode;
     setMode((cur) => cur ?? fallback);
   }, [showModeButtons, restrictedToHome, initMode, autoSelectMode]);
 
@@ -180,9 +181,10 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
     if (entry.phone) setPhone(entry.phone);
   }
 
-  /** 알약이 눌린 섹션에 맞는 주소록 모드를 돌려준다 — 자택/근무지 반납 주소 모두 자택 풀을 재사용 */
+  /** 알약이 눌린 섹션에 맞는 주소록 모드를 돌려준다 — 근무지 반납 주소도 근무지 풀을 그대로 씀
+   * (자택 반납 주소만 자택 풀 재사용 — 자택/근무지 리스트가 서로 섞이면 안 됨) */
   function contextMode(context: BookContext): DeliveryMode {
-    return context === 'workplace' ? 'workplace' : 'home';
+    return context === 'workplace' || context === 'workplaceReturn' ? 'workplace' : 'home';
   }
 
   /** 주소록 항목을 지금 컨텍스트에 맞는 입력란에 채운다 — 자택/근무지 반납 주소는 서로 다른 입력란을 씀 */
@@ -415,7 +417,7 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
     return (
       <div className="addr-pills">
         <button type="button" className="size-chip pickable" onClick={() => clickDefaultPill(context)}>
-          {context === 'workplace' ? '기본 근무지' : '기본 배송지'}
+          {context === 'workplace' || context === 'workplaceReturn' ? '기본 근무지' : '기본 배송지'}
         </button>
         <button type="button" className="size-chip pickable" onClick={() => openBookModal(context)}>즐겨찾기</button>
       </div>
@@ -427,7 +429,7 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
   const addressBookModal = showAddressBookModal && (
     <div className="wd-ov" onClick={(e) => e.target === e.currentTarget && closeBookModal()}>
       <div className="legal-box">
-        <div className="legal-title">즐겨찾기{bookContext === 'workplace' ? ' (근무지)' : ' (자택)'}</div>
+        <div className="legal-title">즐겨찾기{bookContext === 'workplace' || bookContext === 'workplaceReturn' ? ' (근무지)' : ' (자택)'}</div>
         <div className="legal-body">
           <div className="addr-book-panel">
             {filteredAddressBook.length === 0 && <p className="hint" style={{ margin: 0 }}>저장된 주소가 아직 없어요.</p>}
@@ -591,11 +593,11 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
     <>
     {showModeButtons && (
     <div className="delivery-mode-row">
-      <div className="delivery-mode-btns-row">
-        <button type="button" className={`cta ghost delivery-mode-btn ${mode === 'home' ? 'active' : ''}`} onClick={() => selectMode('home')}>
-          집으로 받기
-        </button>
-        {!restrictedToHome && (
+      {!restrictedToHome && (
+        <div className="delivery-mode-btns-row">
+          <button type="button" className={`cta ghost delivery-mode-btn ${mode === 'home' ? 'active' : ''}`} onClick={() => selectMode('home')}>
+            집으로 받기
+          </button>
           <button
             type="button"
             className={`cta ghost delivery-mode-btn ${mode === 'workplace' ? 'active' : ''}`}
@@ -603,8 +605,8 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
           >
             근무지로 받기
           </button>
-        )}
-      </div>
+        </div>
+      )}
       {mode === 'home' && (
         <div className="optional-panel">
           <div className="field-section-row" style={{ marginTop: 0 }}>
