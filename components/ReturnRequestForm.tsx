@@ -120,7 +120,7 @@ export default function ReturnRequestForm({
             <div className="row"><span>전화번호</span><span>{initial.phone ? formatPhone(initial.phone) : '-'}</span></div>
           </div>
           <div style={{ textAlign: 'right', marginTop: 10 }}>
-            <button type="button" className="cta ghost cta-fit" onClick={(e) => { stop(e); onStartEdit(); }}>수정하기</button>
+            <button type="button" className="cta ghost cta-fit return-request-ghost-btn" onClick={(e) => { stop(e); onStartEdit(); }}>수정하기</button>
           </div>
         </>
       ) : null}
@@ -142,7 +142,7 @@ export default function ReturnRequestForm({
               onClick={(e) => { stop(e); openAddressSearch((r) => { setAddress(r.roadAddress); setJibun(r.jibunAddress); }); }}
             >주소 검색</button>
           </div>
-          {jibun && <div className="addr-jibun">지번 주소: {jibun}</div>}
+          {jibun && <div className="addr-jibun return-request-jibun">지번 주소: {jibun}</div>}
           <input className="field" style={{ marginTop: 8 }} placeholder="세부 주소 (건물명, 호수)" value={detailAddress} onChange={(e) => setDetailAddress(e.target.value)} />
 
           <div className="phone-row" style={{ marginTop: 8, alignItems: 'center' }}>
@@ -174,7 +174,7 @@ export default function ReturnRequestForm({
           {err && <div className="hint err" style={{ marginTop: 6 }}>{err}</div>}
           <div className="wd-btns wd-btns-fit" style={{ marginTop: 10 }}>
             {mode === 'manage' && (
-              <button type="button" className="cta ghost return-request-cancel-btn" disabled={pending} onClick={cancelEdit}>취소</button>
+              <button type="button" className="cta ghost return-request-ghost-btn" disabled={pending} onClick={cancelEdit}>취소</button>
             )}
             <button type="button" className="cta" disabled={pending} onClick={save}>{pending ? '저장 중…' : '저장'}</button>
           </div>

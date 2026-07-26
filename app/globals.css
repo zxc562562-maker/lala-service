@@ -280,7 +280,7 @@
 .return-request-card{margin-top:-8px}
 /* 기본 .cta:hover가 배경을 어둡게 칠해서 .ghost의 wine 글자색과 겹쳐 색 반전처럼 보이는 걸
    막음(delivery-mode-btn에 쓴 것과 동일한 처리) */
-.return-request-cancel-btn:not(:disabled):hover{background:none}
+.return-request-ghost-btn:not(:disabled):hover{background:none}
 .return-request-view .row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;font-size:12.5px;color:var(--ink)}
 .return-request-view .row span:first-child{color:var(--muted);flex-shrink:0}
 .resv-status-group{display:flex;align-items:center;gap:6px}
@@ -517,6 +517,7 @@ html{scroll-snap-type:y mandatory;scroll-padding-top:var(--scroll-offset, 154px)
 .push-toggle-btn{padding-top:10px;padding-bottom:10px}
 .addr-jibun{font-size:11px;color:var(--muted);margin-top:-2px}
 .addr-jibun-profile{text-align:right}
+.addr-jibun.return-request-jibun{margin-top:3px}
 
 /* 배송 주소 라벨 옆 "기본 배송지"/"주소록" 알약 */
 .field-section-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:12px 0 6px}
