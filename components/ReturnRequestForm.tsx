@@ -116,10 +116,12 @@ export default function ReturnRequestForm({
           <div className="return-request-view">
             <div className="row"><span>반납 주소</span><span>{[initial.address, initial.detailAddress].filter(Boolean).join(' ') || '-'}</span></div>
             {initial.message && <div className="row"><span>반납 메시지</span><span>{initial.message}</span></div>}
-            <div className="row"><span>반납자명</span><span>{initial.recipientName || '-'}</span></div>
+            <div className="row"><span>이름</span><span>{initial.recipientName || '-'}</span></div>
             <div className="row"><span>전화번호</span><span>{initial.phone ? formatPhone(initial.phone) : '-'}</span></div>
           </div>
-          <button type="button" className="cta ghost cta-fit" style={{ marginTop: 10 }} onClick={(e) => { stop(e); onStartEdit(); }}>수정하기</button>
+          <div style={{ textAlign: 'right', marginTop: 10 }}>
+            <button type="button" className="cta ghost cta-fit" onClick={(e) => { stop(e); onStartEdit(); }}>수정하기</button>
+          </div>
         </>
       ) : null}
 
@@ -149,11 +151,10 @@ export default function ReturnRequestForm({
           </div>
 
           <div className="phone-row" style={{ marginTop: 8, alignItems: 'center' }}>
-            <span className="field-section field-section-plain" style={{ margin: 0, flexShrink: 0 }}>반납자명</span>
+            <span className="field-section field-section-plain" style={{ margin: 0, flexShrink: 0 }}>이름</span>
             <input
               className="field field-name-fit"
               style={{ textAlign: 'right', marginLeft: 'auto' }}
-              placeholder="반납 받는 분 성함"
               value={recipientName}
               onChange={(e) => setRecipientName(e.target.value)}
             />
@@ -173,7 +174,7 @@ export default function ReturnRequestForm({
           {err && <div className="hint err" style={{ marginTop: 6 }}>{err}</div>}
           <div className="wd-btns wd-btns-fit" style={{ marginTop: 10 }}>
             {mode === 'manage' && (
-              <button type="button" className="cta ghost" disabled={pending} onClick={cancelEdit}>취소</button>
+              <button type="button" className="cta ghost return-request-cancel-btn" disabled={pending} onClick={cancelEdit}>취소</button>
             )}
             <button type="button" className="cta" disabled={pending} onClick={save}>{pending ? '저장 중…' : '저장'}</button>
           </div>

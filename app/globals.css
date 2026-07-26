@@ -278,6 +278,9 @@
 .request-return-pill{font-family:var(--sans);font-size:11px;letter-spacing:.04em;padding:4px 10px;border-radius:99px;white-space:nowrap;background:var(--espresso);color:var(--paper);border:none;cursor:pointer}
 .return-info-pill{font-family:var(--sans);font-size:11px;letter-spacing:.04em;padding:4px 10px;border-radius:99px;white-space:nowrap;background:var(--espresso);color:var(--paper);border:none;cursor:pointer}
 .return-request-card{margin-top:-8px}
+/* 기본 .cta:hover가 배경을 어둡게 칠해서 .ghost의 wine 글자색과 겹쳐 색 반전처럼 보이는 걸
+   막음(delivery-mode-btn에 쓴 것과 동일한 처리) */
+.return-request-cancel-btn:not(:disabled):hover{background:none}
 .return-request-view .row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;font-size:12.5px;color:var(--ink)}
 .return-request-view .row span:first-child{color:var(--muted);flex-shrink:0}
 .resv-status-group{display:flex;align-items:center;gap:6px}
