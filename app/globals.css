@@ -113,7 +113,7 @@
 /* 텍스트 크기에 맞춰 좌우만 줄인 작은 버튼 (예: 수정하기, 배송 정보 저장) */
 /* width:auto만으로는 flex-column 부모(.pf-form/.optional-panel)의 align-items:stretch 기본값 때문에
    여전히 꽉 채워지므로, align-self로 늘어남 자체를 막아야 텍스트 크기에 맞게 보인다. */
-.cta-fit{width:auto;display:inline-block;align-self:flex-start;padding:9px 20px;font-size:13px}
+.cta-fit{width:auto;display:inline-block;align-self:center;padding:9px 20px;font-size:13px}
 .cta:not(:disabled):hover{background:#0F0B08}
 .cta.ghost{background:none;color:var(--wine);border:1px solid var(--line)}
 /* 룩 상세 페이지의 CHECK THE CART — 기본 .cta보다 작게 */
@@ -277,7 +277,7 @@
    JS가 아직 안 돈 첫 페인트 순간을 위한 대비값일 뿐(예전 실측값 그대로 둠). */
 html{scroll-snap-type:y mandatory;scroll-padding-top:var(--scroll-offset, 154px)}
 .look-grid{display:grid;grid-template-columns:1fr;gap:0;margin:0 -28px}
-.look-view-toggle{display:flex;justify-content:flex-end;align-items:center;gap:8px;position:sticky;top:var(--header-h, 103px);z-index:15;background:var(--paper);margin:0 -28px;padding:9px 24px 9px 0;border-bottom:1px solid var(--line)}
+.look-view-toggle{display:flex;justify-content:flex-end;align-items:center;gap:8px;position:sticky;top:var(--header-h, 103px);z-index:15;background:var(--paper);margin:0 -28px;padding:5px 0;border-bottom:1px solid var(--line)}
 .look-view-btns{display:flex;gap:0}
 .look-view-btn{width:25px;height:25px;border:none;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);padding:0}
 .look-view-btn.on{color:var(--espresso)}
@@ -469,6 +469,12 @@ html{scroll-snap-type:y mandatory;scroll-padding-top:var(--scroll-offset, 154px)
 .or-divider{display:flex;align-items:center;gap:10px;margin:5px 0 14px;color:var(--muted);font-size:11px}
 .or-divider::before,.or-divider::after{content:'';flex:1;height:1px;background:var(--line)}
 .field-section{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:12px 0 6px}
+/* 공동현관 비밀번호/배송 메시지/전화번호처럼 라벨+입력란을 한 줄로 붙일 때는 자간 트릭(.field-section 기본)
+   대신 일반 자간을 쓴다. */
+.field-section-plain{letter-spacing:normal;text-transform:none}
+/* 전화번호 입력란 — 같은 줄의 .field-section 라벨 옆에서 나머지 공간을 다 차지하면 너무 커 보여서,
+   전화번호 자릿수에 맞게 폭을 제한한다. */
+.field-phone-fit{flex:none;width:150px}
 .optional-toggle{width:100%;margin-top:6px;font-size:12.5px;padding:10px}
 .optional-panel{display:flex;flex-direction:column;gap:7px;margin-top:7px;padding:10px 12px;background:#fff;border:1px solid #EDE6DC;border-radius:4px}
 /* 기본 배송지 등록/즐겨찾기 추가/회수 관련 토글 그룹 — .optional-panel의 flex gap(7px)이
@@ -478,7 +484,7 @@ html{scroll-snap-type:y mandatory;scroll-padding-top:var(--scroll-offset, 154px)
 /* 기본 배송지 등록/즐겨찾기 추가/반납 주소 동일 — 한 줄에 나란히: 라벨(작게)+토글을 세로로 묶은
    칸 3개를 가로로 배치. 자간 트릭 없이 일반 자간의 작은 텍스트를 씀. */
 .toggle-group-row{display:flex;justify-content:space-between;gap:6px}
-.toggle-group-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
+.toggle-group-item{display:flex;align-items:center;gap:4px;cursor:pointer}
 .toggle-group-item span{font-size:9.5px;color:var(--muted);white-space:nowrap}
 .delivery-mode-row{display:flex;flex-direction:column;gap:8px;margin-top:6px}
 .delivery-mode-btn{width:66.6%;align-self:center;margin-top:0;padding:10px;font-size:12.5px}

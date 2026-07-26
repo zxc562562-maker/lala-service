@@ -541,8 +541,8 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
   );
 
   const recipientField = restrictedToHome && (
-    <div className="phone-row" style={{ marginTop: 14, alignItems: 'center' }}>
-      <span className="field-section" style={{ margin: 0, flexShrink: 0 }}>받는 사람</span>
+    <div className="phone-row" style={{ marginTop: 8, alignItems: 'center' }}>
+      <span className="field-section field-section-plain" style={{ margin: 0, flexShrink: 0 }}>받는 사람</span>
       <input
         className="field"
         style={{ textAlign: 'right' }}
@@ -554,12 +554,12 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
   );
 
   const phoneField = (
-    <div className="phone-row" style={{ marginTop: 14, alignItems: 'center' }}>
-      <span className="field-section" style={{ margin: 0, flexShrink: 0 }}>전화번호</span>
+    <div className="phone-row" style={{ marginTop: 8, alignItems: 'center' }}>
+      <span className="field-section field-section-plain" style={{ margin: 0, flexShrink: 0 }}>전화번호</span>
       <input
-        className="field"
+        className="field field-phone-fit"
         style={{ textAlign: 'right' }}
-        placeholder="전화번호 ( - 없이 01000000000)"
+        placeholder="010-0000-0000"
         value={formatPhone(phone)}
         onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
       />
@@ -571,7 +571,7 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
       {err && <div className="hint err">{err}</div>}
       {ok && <div className="hint" style={{ color: 'var(--sage)' }}>저장되었습니다.</div>}
       {showSaveButton && (
-        <button type="button" className="cta cta-fit" disabled={pending} onClick={() => void save()} style={{ marginTop: 14 }}>
+        <button type="button" className="cta cta-fit" disabled={pending} onClick={() => void save()} style={{ marginTop: 8 }}>
           {pending ? '저장 중…' : '배송 정보 저장'}
         </button>
       )}
@@ -617,21 +617,21 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
           <input className="field" placeholder="세부 주소 (건물명, 호수)" value={homeDetailAddress} onChange={(e) => setHomeDetailAddress(e.target.value)} />
 
           {!isParcelDelivery && (
-            <div className="phone-row" style={{ marginTop: 14, alignItems: 'center' }}>
-              <span className="field-section" style={{ margin: 0, flexShrink: 0 }}>공동현관 비밀번호</span>
+            <div className="phone-row" style={{ marginTop: 8, alignItems: 'center' }}>
+              <span className="field-section field-section-plain" style={{ margin: 0, flexShrink: 0 }}>공동현관 비밀번호</span>
               <input className="field" style={{ textAlign: 'right' }} placeholder="자유 출입시 미기재" value={entrancePassword} onChange={(e) => setEntrancePassword(e.target.value)} />
             </div>
           )}
 
-          <div className="phone-row" style={{ marginTop: 14, alignItems: 'center' }}>
-            <span className="field-section" style={{ margin: 0, flexShrink: 0 }}>배송 메시지</span>
+          <div className="phone-row" style={{ marginTop: 8, alignItems: 'center' }}>
+            <span className="field-section field-section-plain" style={{ margin: 0, flexShrink: 0 }}>배송 메시지</span>
             <input className="field" style={{ textAlign: 'right' }} value={deliveryMessage} onChange={(e) => setDeliveryMessage(e.target.value)} />
           </div>
 
           {recipientField}
           {phoneField}
 
-          <div className="toggle-group-row" style={{ marginTop: 14 }}>
+          <div className="toggle-group-row" style={{ marginTop: 8 }}>
             <label className="toggle-group-item">
               <span>기본 배송지 등록</span>
               <span className="ios-toggle">
@@ -724,11 +724,13 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
           </div>
           {workplaceJibun && <div className="addr-jibun">지번 주소: {workplaceJibun}</div>}
           <input className="field" placeholder="근무지 상호명 입력" value={workplaceDetailAddress} onChange={(e) => setWorkplaceDetailAddress(e.target.value)} />
-          <input className="field" style={{ marginTop: 14 }} placeholder="배송 상세 위치 (ex. 대기실 테이블 위, 10번 로커 등)" value={workplace} onChange={(e) => setWorkplace(e.target.value)} />
+          <input className="field" style={{ marginTop: 8 }} placeholder="배송 상세 위치 (ex. 대기실 테이블 위, 10번 로커 등)" value={workplace} onChange={(e) => setWorkplace(e.target.value)} />
 
-          <div className="toggle-group" style={{ marginTop: 14 }}>
-            <label className="pf-row" style={{ padding: '2px 0', borderBottom: 'none', cursor: 'pointer' }}>
-              <span className="pf-row-label pf-row-label-fit">기본 근무지 등록</span>
+          {phoneField}
+
+          <div className="toggle-group-row" style={{ marginTop: 8 }}>
+            <label className="toggle-group-item">
+              <span>기본 근무지 등록</span>
               <span className="ios-toggle">
                 <input
                   type="checkbox"
@@ -739,8 +741,8 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
               </span>
             </label>
 
-            <label className="pf-row" style={{ padding: '2px 0', borderBottom: 'none', cursor: 'pointer' }}>
-              <span className="pf-row-label pf-row-label-fit">즐겨찾기 추가</span>
+            <label className="toggle-group-item">
+              <span>즐겨찾기 추가</span>
               <span className="ios-toggle">
                 <input
                   type="checkbox"
@@ -751,8 +753,8 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
               </span>
             </label>
 
-            <label className="pf-row" style={{ padding: '2px 0', borderBottom: 'none', cursor: 'pointer' }}>
-              <span className="pf-row-label pf-row-label-fit">이 근무지에서 회수</span>
+            <label className="toggle-group-item">
+              <span>이 근무지에서 회수</span>
               <span className="ios-toggle">
                 <input type="checkbox" checked={sameAsWorkplaceDelivery} onChange={(e) => setSameAsWorkplaceDelivery(e.target.checked)} />
                 <span className="ios-slider" />
@@ -782,7 +784,7 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
             </>
           )}
 
-          {footer}
+          {saveTail}
         </div>
       )}
 
