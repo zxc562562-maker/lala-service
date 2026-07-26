@@ -368,6 +368,10 @@ export default function CartPage() {
 
             {pickupReturnRequested && (
               <>
+                <p className="hint return-addr-hint" style={{ marginTop: 8 }}>
+                  반납 장소 미정일 경우 반납일 낮 12:00 전까지 카카오톡 채널로 연락주세요.<br />
+                  낮 12시 이후 연락시 추가금액이 발생될 수 있어요.
+                </p>
                 <div className="field-section-row" style={{ marginTop: 8 }}>
                   <div className="field-section" style={{ margin: 0 }}>반납 주소</div>
                   <div className="addr-pills">
@@ -412,10 +416,6 @@ export default function CartPage() {
                     onChange={(e) => setPickupReturnMessage(e.target.value)}
                   />
                 </div>
-                <p className="hint return-addr-hint" style={{ marginTop: 8 }}>
-                  반납 장소 미정일 경우 반납일 낮 12:00 전까지 카카오톡 채널로 연락주셔야 해요.<br />
-                  낮 12시 이후 연락시 추가금액이 발생될 수 있어요.
-                </p>
               </>
             )}
           </div>
