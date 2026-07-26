@@ -5,6 +5,7 @@ import { supabaseServer } from '@lala/shared/lib/supabase/server';
 import { getCachedUser } from '@lala/shared/lib/auth-cache';
 import AccountDateFilter from '@/components/AccountDateFilter';
 import AccountOrderCard from '@/components/AccountOrderCard';
+import DemoOrderButton from '@/components/DemoOrderButton';
 import { DELIVERY_METHODS } from '@lala/shared/lib/delivery';
 import { getOrderStatusLabel, PROBLEM_LABEL, RESPONSE_LABEL } from '@/lib/order-status-labels';
 
@@ -149,6 +150,7 @@ export default async function AccountPage({
 
   return (
     <section className="detail">
+      {process.env.NODE_ENV !== 'production' && <DemoOrderButton />}
       <AccountDateFilter initialFrom={from} initialTo={to} />
 
       {rows.length === 0 ? (

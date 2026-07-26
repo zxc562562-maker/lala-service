@@ -319,7 +319,7 @@ export default function CartClient({ initialData }: { initialData: CartPageData 
         </div>
         <div className="row"><span>렌탈비용</span><span>{valid ? won(sub) : '—'}</span></div>
         {deliveryFeeLabel && (
-          <div className="row"><span style={{ letterSpacing: '6px' }}>{deliveryFeeLabel}</span><span>{deliveryMethod === 'QUICK' ? '후불' : won(deliveryFee)}</span></div>
+          <div className="row"><span style={deliveryMethod === 'PARCEL' ? undefined : { letterSpacing: '6px' }}>{deliveryFeeLabel}</span><span>{deliveryMethod === 'QUICK' ? '후불' : won(deliveryFee)}</span></div>
         )}
         <div className="row"><span><span style={{ letterSpacing: '6px' }}>보증금</span> <small className="deposit-note">* 반납검수 후 환불</small></span><span>{won(dep)}</span></div>
         <div className="row total">
