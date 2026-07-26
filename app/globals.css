@@ -110,6 +110,8 @@
 .hint.err{color:var(--wine)}
 .cta{margin-top:18px;width:100%;background:var(--espresso);color:#fff;border:none;padding:16px;border-radius:3px;font-family:var(--sans);font-size:15px;letter-spacing:.04em;cursor:pointer;transition:background .2s}
 .cta:disabled{opacity:.35;cursor:default}
+/* 텍스트 크기에 맞춰 좌우만 줄인 작은 버튼 (예: 수정하기, 배송 정보 저장) */
+.cta-fit{width:auto;display:inline-block;padding:9px 20px;font-size:13px}
 .cta:not(:disabled):hover{background:#0F0B08}
 .cta.ghost{background:none;color:var(--wine);border:1px solid var(--line)}
 /* 룩 상세 페이지의 CHECK THE CART — 기본 .cta보다 작게 */
@@ -396,7 +398,7 @@ html{scroll-snap-type:y mandatory;scroll-padding-top:var(--scroll-offset, 154px)
 .pf-row-label-fit{width:85px;font-size:10.5px;text-align:justify;text-align-last:justify;text-justify:inter-character}
 /* 마케팅 정보 수신 동의 섹션 — 섹션 제목과 토글 라벨 3개(길이가 서로 다름) 전부 같은 스타일(고정폭+자간)로
    통일해 오른쪽 끝을 서로 맞춘다. */
-.pf-row-label-marketing-fit{width:130px;font-size:10.5px;white-space:nowrap;text-align:justify;text-align-last:justify;text-justify:inter-character}
+.pf-row-label-marketing-fit{width:130px;font-size:10.5px;white-space:nowrap;text-align:left}
 .pf-input{flex:1;min-width:0;text-align:right;border:none;background:none;font-family:var(--sans);font-size:13px;color:var(--ink);padding:6px 8px;border-radius:3px}
 .pf-input:disabled{color:var(--muted);cursor:not-allowed}
 .pf-edit{background:#fff;border:1px solid #EDE6DC;box-shadow:0 1px 3px rgba(28,22,17,.04)}
@@ -470,6 +472,8 @@ html{scroll-snap-type:y mandatory;scroll-padding-top:var(--scroll-offset, 154px)
    그룹 내부 토글 사이에도 그대로 적용돼 촘촘하게 묶이지 않던 것을, 그룹을 감싸는 컨테이너로
    분리해 내부 gap을 0으로 만들고 각 행 자체의 padding(2px 0)만으로 최소 여백을 준다. */
 .toggle-group{display:flex;flex-direction:column}
+.delivery-checkbox-row{display:flex;gap:16px}
+.delivery-checkbox{display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--espresso);cursor:pointer}
 .delivery-mode-row{display:flex;flex-direction:column;gap:8px;margin-top:6px}
 .delivery-mode-btn{width:66.6%;align-self:center;margin-top:0;padding:10px;font-size:12.5px}
 /* 기본 .cta:hover가 배경을 어둡게 칠해서(.ghost의 wine 글자색과 겹쳐 "검정 바탕 빨간 글씨"처럼 보임) —

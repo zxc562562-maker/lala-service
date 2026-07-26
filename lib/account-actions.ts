@@ -17,6 +17,10 @@ export interface Profile {
   deliveryZonecode: string | null;
   deliveryDetailAddress: string | null;
   entrancePassword: string | null;
+  deliveryMessage: string | null;
+  deliveryRingBell: boolean;
+  deliveryKnock: boolean;
+  deliveryLeaveAtHandle: boolean;
   returnAddress: string | null;
   returnJibun: string | null;
   returnDetailAddress: string | null;
@@ -39,6 +43,7 @@ export async function getProfile(): Promise<Profile | null> {
       username,name,phone,
       marketing_lookbook_consent,marketing_promotion_consent,marketing_daily_consent,
       delivery_address,delivery_jibun_address,delivery_zonecode,delivery_detail_address,entrance_password,
+      delivery_message,delivery_ring_bell,delivery_knock,delivery_leave_at_handle,
       return_address,return_jibun_address,return_detail_address,return_entrance_password,
       delivery_phone,delivery_recipient_name,workplace,delivery_in_store,return_in_store,preferred_delivery_method
     `)
@@ -55,6 +60,10 @@ export async function getProfile(): Promise<Profile | null> {
     deliveryZonecode: data?.delivery_zonecode ?? null,
     deliveryDetailAddress: data?.delivery_detail_address ?? null,
     entrancePassword: data?.entrance_password ?? null,
+    deliveryMessage: data?.delivery_message ?? null,
+    deliveryRingBell: data?.delivery_ring_bell ?? false,
+    deliveryKnock: data?.delivery_knock ?? false,
+    deliveryLeaveAtHandle: data?.delivery_leave_at_handle ?? false,
     returnAddress: data?.return_address ?? null,
     returnJibun: data?.return_jibun_address ?? null,
     returnDetailAddress: data?.return_detail_address ?? null,
@@ -81,6 +90,10 @@ export interface UpdateProfileInput {
   deliveryZonecode?: string;
   deliveryDetailAddress?: string;
   entrancePassword?: string;
+  deliveryMessage?: string;
+  deliveryRingBell?: boolean;
+  deliveryKnock?: boolean;
+  deliveryLeaveAtHandle?: boolean;
   returnAddress?: string;
   returnJibun?: string;
   returnDetailAddress?: string;
@@ -134,6 +147,10 @@ export async function updateProfile(input: UpdateProfileInput): Promise<{ ok: bo
       delivery_zonecode: input.deliveryZonecode?.trim() || null,
       delivery_detail_address: input.deliveryDetailAddress?.trim() || null,
       entrance_password: input.entrancePassword?.trim() || null,
+      delivery_message: input.deliveryMessage?.trim() || null,
+      delivery_ring_bell: input.deliveryRingBell ?? false,
+      delivery_knock: input.deliveryKnock ?? false,
+      delivery_leave_at_handle: input.deliveryLeaveAtHandle ?? false,
       return_address: input.returnAddress?.trim() || null,
       return_jibun_address: input.returnJibun?.trim() || null,
       return_detail_address: input.returnDetailAddress?.trim() || null,

@@ -100,7 +100,7 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
         </div>
 
         <div style={{ marginTop: 14 }}>
-          <DeliveryInfoForm profile={profile} autoSelectMode={false} />
+          <DeliveryInfoForm profile={profile} autoSelectMode={false} showPickupOption={false} />
         </div>
 
         <PushNotificationToggle />
@@ -150,7 +150,7 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
 
         {err && <div className="hint err">{err}</div>}
         {ok && <div className="hint" style={{ color: 'var(--sage)' }}>저장되었습니다.</div>}
-        <button className="cta" disabled={pending} onClick={save}>수정하기</button>
+        <button className="cta cta-fit" disabled={pending} onClick={save}>수정하기</button>
       </div>
 
       {showWithdraw && (

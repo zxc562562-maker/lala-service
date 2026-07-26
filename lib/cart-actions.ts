@@ -182,6 +182,7 @@ export async function getCartPageData(): Promise<CartPageData> {
       username,name,phone,
       marketing_lookbook_consent,marketing_promotion_consent,marketing_daily_consent,
       delivery_address,delivery_jibun_address,delivery_zonecode,delivery_detail_address,entrance_password,
+      delivery_message,delivery_ring_bell,delivery_knock,delivery_leave_at_handle,
       return_address,return_jibun_address,return_detail_address,return_entrance_password,
       delivery_phone,delivery_recipient_name,workplace,delivery_in_store,return_in_store,preferred_delivery_method
     `).eq('id', customerId).maybeSingle(),
@@ -222,6 +223,10 @@ export async function getCartPageData(): Promise<CartPageData> {
     deliveryZonecode: profileRow?.delivery_zonecode ?? null,
     deliveryDetailAddress: profileRow?.delivery_detail_address ?? null,
     entrancePassword: profileRow?.entrance_password ?? null,
+    deliveryMessage: profileRow?.delivery_message ?? null,
+    deliveryRingBell: profileRow?.delivery_ring_bell ?? false,
+    deliveryKnock: profileRow?.delivery_knock ?? false,
+    deliveryLeaveAtHandle: profileRow?.delivery_leave_at_handle ?? false,
     returnAddress: profileRow?.return_address ?? null,
     returnJibun: profileRow?.return_jibun_address ?? null,
     returnDetailAddress: profileRow?.return_detail_address ?? null,

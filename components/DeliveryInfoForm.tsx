@@ -48,9 +48,10 @@ export interface DeliveryInfoFormHandle {
  */
 const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
   profile: Profile; onSaved?: () => void; showSaveButton?: boolean; restrictedToHome?: boolean; isParcelDelivery?: boolean;
-  showModeButtons?: boolean; autoSelectMode?: boolean;
+  showModeButtons?: boolean; autoSelectMode?: boolean; showPickupOption?: boolean;
 }>(function DeliveryInfoForm({
   profile, onSaved, showSaveButton = true, restrictedToHome = false, isParcelDelivery = false, showModeButtons = true, autoSelectMode = true,
+  showPickupOption = true,
 }, ref) {
   const router = useRouter();
   const initMode = initialMode(profile);
@@ -97,6 +98,10 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
   const [homeZonecode, setHomeZonecode] = useState(initMode === 'home' ? profile.deliveryZonecode ?? '' : '');
   const [homeDetailAddress, setHomeDetailAddress] = useState(initMode === 'home' ? profile.deliveryDetailAddress ?? '' : '');
   const [entrancePassword, setEntrancePassword] = useState(profile.entrancePassword ?? '');
+  const [ringBell, setRingBell] = useState(profile.deliveryRingBell);
+  const [knock, setKnock] = useState(profile.deliveryKnock);
+  const [leaveAtHandle, setLeaveAtHandle] = useState(profile.deliveryLeaveAtHandle);
+  const [deliveryMessage, setDeliveryMessage] = useState(profile.deliveryMessage ?? '');
 
   // 근무지로 받기 전용 주소 — 위와 대칭
   const [workplaceAddress, setWorkplaceAddress] = useState(initMode === 'workplace' ? profile.deliveryAddress ?? '' : '');
@@ -345,6 +350,10 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
       const finalEntrance = isHome ? entrancePassword : undefined;
       const finalZonecode = isHome ? homeZonecode : undefined;
       const finalWorkplace = isWorkplace ? workplace : undefined;
+      const finalDeliveryMessage = isHome ? deliveryMessage : undefined;
+      const finalRingBell = isHome ? ringBell : false;
+      const finalKnock = isHome ? knock : false;
+      const finalLeaveAtHandle = isHome ? leaveAtHandle : false;
 
       // "회수 주소/근무지 동일" 껐을 때만 따로 입력한 회수지 사용, 그 외엔 배송지와 전부 동일.
       // 자택·근무지 각각 독립된 회수 state를 쓴다(자택 회수지와 근무지 회수지가 서로 안 섞이도록).
@@ -372,6 +381,10 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
         deliveryZonecode: finalZonecode,
         deliveryDetailAddress: finalDetail,
         entrancePassword: finalEntrance,
+        deliveryMessage: finalDeliveryMessage,
+        deliveryRingBell: finalRingBell,
+        deliveryKnock: finalKnock,
+        deliveryLeaveAtHandle: finalLeaveAtHandle,
         returnAddress: finalReturnAddress,
         returnJibun: finalReturnJibun,
         returnDetailAddress: finalReturnDetail,
@@ -563,7 +576,7 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
       {err && <div className="hint err">{err}</div>}
       {ok && <div className="hint" style={{ color: 'var(--sage)' }}>저장되었습니다.</div>}
       {showSaveButton && (
-        <button type="button" className="cta" disabled={pending} onClick={() => void save()} style={{ marginTop: 14 }}>
+        <button type="button" className="cta cta-fit" disabled={pending} onClick={() => void save()} style={{ marginTop: 14 }}>
           {pending ? '저장 중…' : '배송 정보 저장'}
         </button>
       )}
@@ -604,6 +617,23 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
               <input className="field" placeholder="공동현관 비밀번호 (자유 출입시 미기재)" value={entrancePassword} onChange={(e) => setEntrancePassword(e.target.value)} />
             </>
           )}
+
+          <div className="delivery-checkbox-row" style={{ marginTop: 14 }}>
+            <label className="delivery-checkbox">
+              <input type="checkbox" checked={ringBell} onChange={(e) => setRingBell(e.target.checked)} />
+              벨
+            </label>
+            <label className="delivery-checkbox">
+              <input type="checkbox" checked={knock} onChange={(e) => setKnock(e.target.checked)} />
+              노크
+            </label>
+            <label className="delivery-checkbox">
+              <input type="checkbox" checked={leaveAtHandle} onChange={(e) => setLeaveAtHandle(e.target.checked)} />
+              손잡이
+            </label>
+          </div>
+          <div className="field-section" style={{ marginTop: 14, marginBottom: 0 }}>배송 메시지</div>
+          <input className="field" placeholder="배송 기사님께 남길 메시지" value={deliveryMessage} onChange={(e) => setDeliveryMessage(e.target.value)} />
 
           <div className="toggle-group" style={{ marginTop: 14 }}>
             <label className="pf-row" style={{ padding: '2px 0', borderBottom: 'none', cursor: 'pointer' }}>
@@ -760,7 +790,7 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
         </div>
       )}
 
-      {!restrictedToHome && (
+      {!restrictedToHome && showPickupOption && (
       <button
         type="button"
         className={`cta ghost delivery-mode-btn ${mode === 'pickup' ? 'active' : ''}`}
@@ -769,7 +799,7 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
         직접 픽업·회수
       </button>
       )}
-      {!restrictedToHome && mode === 'pickup' && (
+      {!restrictedToHome && showPickupOption && mode === 'pickup' && (
         <div className="optional-panel">
           <p className="hint" style={{ margin: 0 }}>매장에서 직접 픽업하고 반납도 매장으로 직접 가져다주시면 돼요.</p>
           {footer}
