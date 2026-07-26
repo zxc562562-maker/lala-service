@@ -3,6 +3,7 @@
 import { supabaseServer, supabaseAdmin } from '@lala/shared/lib/supabase/server';
 import { getCachedUser } from '@lala/shared/lib/auth-cache';
 import { sendPushToCustomer } from '@lala/shared/lib/push';
+import { isValidPassword } from './username';
 
 export interface Profile {
   username: string;
@@ -113,8 +114,8 @@ export async function updateProfile(input: UpdateProfileInput): Promise<{ ok: bo
   if (!user) return { ok: false, reason: '로그인이 필요합니다.' };
   const userClient = await supabaseServer();
   if (!input.name.trim()) return { ok: false, reason: '이름을 입력해주세요.' };
-  if (input.newPassword && input.newPassword.length < 4) {
-    return { ok: false, reason: '비밀번호는 4자 이상이어야 해요.' };
+  if (input.newPassword && !isValidPassword(input.newPassword)) {
+    return { ok: false, reason: '비밀번호는 영문/숫자/특수문자 중 2가지 이상을 조합해 10자 이상 입력해주세요.' };
   }
 
   // 각 카테고리 동의가 새로 켜진 경우에만 그 카테고리의 동의 시각을 갱신(철회 시엔 과거 동의 시점 기록을 보존)

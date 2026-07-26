@@ -75,7 +75,7 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
         <div className="pf-row">
           <span className="pf-label-with-hint">
             <label>비밀번호</label>
-            <span className="pf-pw-hint">4자 이상</span>
+            <span className="pf-pw-hint">10자 이상 · 2종류 조합</span>
           </span>
           <input
             className="pf-input pf-edit pf-tight pf-w16"

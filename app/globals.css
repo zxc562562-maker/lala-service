@@ -100,13 +100,14 @@
 .summary .row.total{border-top:1px solid var(--line);margin-top:6px;padding-top:14px;color:var(--ink)}
 .deposit-note{font-size:10.5px;color:var(--muted);font-weight:400}
 .amt-group{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
-.subscription-note{font-size:11.5px;font-weight:700;color:var(--wine);text-align:right;line-height:1.5;white-space:nowrap}
+.subscription-note{font-size:11.5px;font-weight:700;color:var(--wine);text-align:right;line-height:1.5;white-space:nowrap;margin-top:10px}
 .summary .row.total .amt{font-family:var(--sans),serif;font-size:13px}
 .hint{font-size:13px;color:var(--muted);margin-top:4px;min-height:20px}
 .delivery-method-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0 16px;font-size:12px;color:#4A4146;border-bottom:1px solid var(--line)}
 .delivery-method-pills{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end}
 .pw-rule{font-size:10.5px;color:var(--muted);margin-top:-2px;margin-bottom:2px;min-height:auto}
 .return-addr-hint{font-size:10.5px;color:var(--espresso);font-weight:500;margin-top:-4px;margin-bottom:-2px;min-height:auto}
+.pickup-hint-oneline{font-size:11px;white-space:nowrap;min-height:auto}
 .hint.err{color:var(--wine)}
 .cta{margin-top:18px;width:100%;background:var(--espresso);color:#fff;border:none;padding:16px;border-radius:3px;font-family:var(--sans);font-size:15px;letter-spacing:.04em;cursor:pointer;transition:background .2s}
 .cta:disabled{opacity:.35;cursor:default}
@@ -121,16 +122,25 @@
 .look-cart-cta{width:auto;display:inline-block;margin:0;padding:9px 14px;font-size:12px;text-decoration:none;text-align:center}
 .look-cart-cta.outline{background:var(--paper);color:var(--espresso);border:1px solid var(--espresso)}
 .look-cart-cta.outline:hover{background:var(--paper);opacity:.8}
+/* 카트 페이지 하단: 룩북 보기(왼쪽, 고정폭) + 결제하기(오른쪽, 나머지 폭 전부) 한 줄 배치 */
+.cart-checkout-row{display:flex;align-items:center;gap:8px;margin-top:18px}
+.cart-checkout-btn{flex:1;white-space:nowrap}
 .cart-page{padding:8px 0 40px;max-width:560px;margin:0 auto}
 /* 카트 페이지만 헤더 "로그아웃"과 우측을 맞추기 위해 공용 .cart-page의 폭 제한(체크아웃·결제 페이지 등과
    공유)을 풀고 .detail과 동일한 -18px 보정을 적용한다 — 다른 .cart-page 사용처는 그대로 둠. */
 .cart-wide{max-width:none;margin:0 -18px 0 0}
 .cart-title{font-family:var(--sans);font-size:20px;letter-spacing:.16em;margin:6px 0 20px;text-align:center;color:var(--espresso)}
 .cart-list{display:flex;flex-direction:column;gap:14px}
-.cart-item{display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--line);padding-bottom:14px}
+/* align-items:center였을 때는 상품명이 항상 info 블록의 첫 줄이어도, 배지가 추가돼 info 전체 높이가
+   늘어나면 그 늘어난 블록을 썸네일(고정 72px) 기준으로 다시 가운데 정렬하면서 상품명 위치 자체가
+   같이 밀렸다. flex-start로 위쪽 기준 정렬해야 상품명이 배지 유무와 무관하게 항상 같은 위치. */
+.cart-item{display:flex;align-items:flex-start;gap:12px;border-bottom:1px solid var(--line);padding-bottom:14px}
 .cart-thumb{width:54px;height:72px;border-radius:2px;flex:0 0 auto;border:1px solid var(--line)}
 .cart-info{flex:1;min-width:0}
 .cart-name-row{display:flex;align-items:center;justify-content:flex-start;gap:5px}
+/* 다른 회원님도 담은 상품 배지가 상품명 줄 위에 오면 상품명이 아래로 밀려 보였음 —
+   순서를 뒤집어(이름 먼저, 배지는 그 아래) 상품명 위치는 항상 고정되게 함 */
+.cart-bottom + .cart-name-row{margin-top:4px}
 .cart-name-group{display:flex;align-items:center;gap:5px;min-width:0}
 .cart-name-group .size-chip{flex-shrink:0}
 .cart-name{font-size:12px;font-weight:500;color:var(--espresso);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
@@ -527,7 +537,7 @@ html{scroll-snap-type:y mandatory;scroll-padding-top:var(--scroll-offset, 154px)
 .phone-row .field{flex:1;min-width:0}
 /* .phone-row .field(위 규칙, 클래스 2개)가 .field-phone-fit(클래스 1개)보다 선택자 우선순위가 높아서
    전화번호 입력란 폭 제한이 실제로는 전혀 반영되지 않고 있었다 — 우선순위를 맞춰 확실히 이기게 함. */
-.phone-row .field-phone-fit{flex:none;width:150px}
+.phone-row .field-phone-fit{flex:none;width:calc(13ch + 24px)}
 .phone-btn{width:auto;margin-top:0;flex-shrink:0;padding:0 14px;font-size:12px;white-space:nowrap}
 .phone-code-row{display:flex;gap:8px;margin-top:5px}
 .phone-code-row .field{flex:1;min-width:0}

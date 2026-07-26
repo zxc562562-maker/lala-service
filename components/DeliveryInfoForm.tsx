@@ -811,12 +811,12 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
         className={`cta ghost delivery-mode-btn ${mode === 'pickup' ? 'active' : ''}`}
         onClick={() => selectMode('pickup')}
       >
-        직접 픽업·회수
+        직접 픽업반납
       </button>
       )}
       {!restrictedToHome && showPickupOption && mode === 'pickup' && (
         <div className="optional-panel">
-          <p className="hint" style={{ margin: 0 }}>매장에서 직접 픽업하고 반납도 매장으로 직접 가져다주시면 돼요.</p>
+          <p className="hint pickup-hint-oneline" style={{ margin: 0 }}>매장에서 직접 픽업하고 반납도 매장으로 직접 가져다주시면 돼요.</p>
           {footer}
         </div>
       )}

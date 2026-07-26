@@ -187,11 +187,6 @@ export default function CartPage() {
           <div className="cart-item" key={c.id}>
             <div className="cart-thumb" style={{ background: `linear-gradient(160deg, ${c.c2}, ${c.c1})` }} />
             <div className="cart-info">
-              {otherCartConflicts.has(c.productId) && (
-                <div className="cart-name-row">
-                  <span className="cart-conflict">⚡ 다른 회원님의 카트에도 담겨 있어요</span>
-                </div>
-              )}
               <div className="cart-bottom">
                 <span className="cart-name-group">
                   <span className="cart-name">{c.name}</span>
@@ -199,6 +194,11 @@ export default function CartPage() {
                 </span>
                 <span className="cart-total">{won(c.dailyPrice)}<small> /일</small></span>
               </div>
+              {otherCartConflicts.has(c.productId) && (
+                <div className="cart-name-row">
+                  <span className="cart-conflict">⚡ 다른 회원님의 카트에도 담겨 있어요</span>
+                </div>
+              )}
             </div>
             <button className="cart-x" onClick={() => remove(c.id)} disabled={pending} aria-label="삭제">×</button>
           </div>
@@ -260,7 +260,7 @@ export default function CartPage() {
         </div>
         <div className="row"><span>렌탈비용</span><span>{valid ? won(sub) : '—'}</span></div>
         {deliveryFeeLabel && (
-          <div className="row"><span>{deliveryFeeLabel}</span><span>{won(deliveryFee)}</span></div>
+          <div className="row"><span style={{ letterSpacing: '6px' }}>{deliveryFeeLabel}</span><span>{deliveryMethod === 'QUICK' ? '후불' : won(deliveryFee)}</span></div>
         )}
         <div className="row"><span><span style={{ letterSpacing: '6px' }}>보증금</span> <small className="deposit-note">* 반납검수 후 환불</small></span><span>{won(dep)}</span></div>
         <div className="row total">
@@ -288,14 +288,20 @@ export default function CartPage() {
 
       {err && <div className="hint err" style={{ marginTop: 8 }}>{err}</div>}
 
-      <button className="cta" disabled={!valid || !deliveryMethod || (!timeSlotDisabled && !effectiveSlot) || pending} onClick={checkout}>
-        {pending ? '처리 중…'
-          : !valid ? '예약일을 선택하세요'
-          : !deliveryMethod ? '배송 방법을 선택하세요'
-          : (!timeSlotDisabled && !effectiveSlot) ? '배송 시간을 선택하세요'
-          : '결제하기'}
-      </button>
-      <Link className="cta ghost" href="/looks" style={{ display: 'block', width: 'fit-content', margin: '10px auto 0' }}>룩북 둘러보기</Link>
+      <div className="cart-checkout-row">
+        <Link className="cta ghost look-cart-cta outline" href="/looks">룩북 보기</Link>
+        <button
+          className="cta look-cart-cta cart-checkout-btn"
+          disabled={!valid || !deliveryMethod || (!timeSlotDisabled && !effectiveSlot) || pending}
+          onClick={checkout}
+        >
+          {pending ? '처리 중…'
+            : !valid ? '예약일을 선택하세요'
+            : !deliveryMethod ? '배송 방법을 선택하세요'
+            : (!timeSlotDisabled && !effectiveSlot) ? '배송 시간을 선택하세요'
+            : '결제하기'}
+        </button>
+      </div>
     </section>
   );
 }
