@@ -15,8 +15,8 @@ function CheckoutForm() {
   const slot = params.get('slot');
   const method = params.get('method');
   const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
-  // 직배송만 시간 지정 배송이 가능해 시간 정보가 필요하고, 퀵배송·택배는 시간 없이 진행한다.
-  const needsSlot = method === 'DIRECT';
+  // 직배송·직접 픽업은 시간을 맞춰야 해서 시간 정보가 필요하고, 퀵배송·택배는 시간 없이 진행한다.
+  const needsSlot = method === 'DIRECT' || method === 'PICKUP';
   const initErr = !co || !ret ? '예약 날짜 정보가 없습니다.'
     : !method || !isValidDeliveryMethod(method) ? '배송 방법 정보가 없습니다. 카트에서 다시 시도해주세요.'
     : needsSlot && (!slot || !isValidDeliverySlot(slot)) ? '배송 시간 정보가 없습니다. 카트에서 다시 시도해주세요.'

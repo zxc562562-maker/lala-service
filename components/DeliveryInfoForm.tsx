@@ -12,6 +12,9 @@ import { openAddressSearch } from '@/lib/address-search';
 import { formatPhone } from '@/lib/phone-format';
 
 type Mode = DeliveryMode | null;
+/** 주소록 알약이 눌린 섹션 — 'return'은 자택의 반납 주소, 'workplaceReturn'은 근무지의 반납 주소
+ * (둘 다 자택 주소록 풀을 재사용하지만, 불러온 값을 채울 입력란은 서로 다름). */
+type BookContext = 'home' | 'workplace' | 'return' | 'workplaceReturn';
 
 function initialMode(profile: Profile): Mode {
   if (profile.workplace) return 'workplace';
@@ -145,7 +148,7 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
   // 불러온 값을 어느 입력란에 채울지 정한다.
   const [addressBook, setAddressBook] = useState<AddressBookEntry[]>([]);
   const [showAddressBookModal, setShowAddressBookModal] = useState(false);
-  const [bookContext, setBookContext] = useState<'home' | 'workplace' | 'return'>('home');
+  const [bookContext, setBookContext] = useState<BookContext>('home');
   const [bookMsg, setBookMsg] = useState<string | null>(null);
   const [bookPending, setBookPending] = useState(false);
 
@@ -177,18 +180,23 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
     if (entry.phone) setPhone(entry.phone);
   }
 
-  /** 알약이 눌린 섹션(자택/근무지/회수 주소)에 맞는 주소록 모드를 돌려준다 — 회수 주소는 자택 풀을 재사용 */
-  function contextMode(context: 'home' | 'workplace' | 'return'): DeliveryMode {
+  /** 알약이 눌린 섹션에 맞는 주소록 모드를 돌려준다 — 자택/근무지 반납 주소 모두 자택 풀을 재사용 */
+  function contextMode(context: BookContext): DeliveryMode {
     return context === 'workplace' ? 'workplace' : 'home';
   }
 
-  /** 주소록 항목을 지금 컨텍스트(자택/근무지/회수 주소)에 맞는 입력란에 채운다 */
-  function loadEntryInto(entry: AddressBookEntry, context: 'home' | 'workplace' | 'return') {
+  /** 주소록 항목을 지금 컨텍스트에 맞는 입력란에 채운다 — 자택/근무지 반납 주소는 서로 다른 입력란을 씀 */
+  function loadEntryInto(entry: AddressBookEntry, context: BookContext) {
     if (context === 'return') {
       setReturnAddress(entry.address ?? '');
       setReturnJibun(entry.jibun ?? '');
       setReturnDetailAddress(entry.detailAddress ?? '');
       setReturnEntrancePassword(entry.entrancePassword ?? '');
+      if (entry.phone) setPhone(entry.phone);
+    } else if (context === 'workplaceReturn') {
+      setReturnWorkplaceAddress(entry.address ?? '');
+      setReturnWorkplaceJibun(entry.jibun ?? '');
+      setReturnWorkplaceDetailAddress(entry.detailAddress ?? '');
       if (entry.phone) setPhone(entry.phone);
     } else {
       applyEntryFields(entry);
@@ -303,7 +311,7 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
   }
 
   /** "기본 배송지" 알약 클릭 — 그 섹션(자택/근무지/회수 주소) 모드의 기본 배송지만 불러온다. 없으면 안내 팝업만 띄움 */
-  function clickDefaultPill(context: 'home' | 'workplace' | 'return') {
+  function clickDefaultPill(context: BookContext) {
     const def = addressBook.find((e) => e.mode === contextMode(context) && e.isDefault);
     if (def) {
       loadEntryInto(def, context);
@@ -312,7 +320,7 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
     }
   }
 
-  function openBookModal(context: 'home' | 'workplace' | 'return') {
+  function openBookModal(context: BookContext) {
     setBookContext(context);
     setShowAddressBookModal(true);
   }
@@ -403,7 +411,7 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
 
   useImperativeHandle(ref, () => ({ save }));
 
-  function renderAddressPills(context: 'home' | 'workplace' | 'return') {
+  function renderAddressPills(context: BookContext) {
     return (
       <div className="addr-pills">
         <button type="button" className="size-chip pickable" onClick={() => clickDefaultPill(context)}>
@@ -633,7 +641,7 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
           {recipientField}
           {phoneField}
 
-          <div className="toggle-group-row" style={{ marginTop: -3, justifyContent: restrictedToHome ? 'flex-start' : 'space-between' }}>
+          <div className="toggle-group-row" style={{ marginTop: -3, justifyContent: restrictedToHome ? 'flex-end' : 'space-between' }}>
             <label className="toggle-group-item">
               <span>기본 배송지 등록</span>
               <span className="ios-toggle">
@@ -671,13 +679,13 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
 
           {!restrictedToHome && !sameAsDelivery && (
             <>
-              <p className="hint return-addr-hint" style={{ marginTop: 14 }}>회수 장소가 불분명한 경우에는 비워두시고 카카오톡 채널로 연락 주세요.</p>
+              <p className="hint return-addr-hint" style={{ marginTop: 14 }}>반납 장소가 불분명한 경우에는 비워두시고 카카오톡 채널로 연락 주세요.</p>
               <div className="field-section-row" style={{ marginTop: 0 }}>
-                <div className="field-section" style={{ margin: 0 }}>회수 주소</div>
+                <div className="field-section" style={{ margin: 0 }}>반납 주소</div>
                 {renderAddressPills('return')}
               </div>
               <div className="addr-row">
-                <input className="field" placeholder="회수 주소" value={returnAddress} onChange={(e) => setReturnAddress(e.target.value)} />
+                <input className="field" placeholder="반납 주소" value={returnAddress} onChange={(e) => setReturnAddress(e.target.value)} />
                 <button
                   type="button"
                   className="cta ghost addr-btn"
@@ -760,7 +768,7 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
             </label>
 
             <label className="toggle-group-item">
-              <span>이 근무지에서 회수</span>
+              <span>이 근무지에서 반납</span>
               <span className="ios-toggle">
                 <input type="checkbox" checked={sameAsWorkplaceDelivery} onChange={(e) => setSameAsWorkplaceDelivery(e.target.checked)} />
                 <span className="ios-slider" />
@@ -770,10 +778,13 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
 
           {!sameAsWorkplaceDelivery && (
             <>
-              <p className="hint return-addr-hint" style={{ marginTop: 14 }}>회수 장소가 불분명한 경우에는 비워두시고 카카오톡 채널로 연락 주세요.</p>
-              <div className="field-section" style={{ marginTop: 0, marginBottom: 0 }}>회수 주소</div>
+              <p className="hint return-addr-hint" style={{ marginTop: 14 }}>반납 장소가 불분명한 경우에는 비워두시고 카카오톡 채널로 연락 주세요.</p>
+              <div className="field-section-row" style={{ marginTop: 0 }}>
+                <div className="field-section" style={{ margin: 0 }}>반납 주소</div>
+                {renderAddressPills('workplaceReturn')}
+              </div>
               <div className="addr-row">
-                <input className="field" placeholder="회수 주소" value={returnWorkplaceAddress} onChange={(e) => setReturnWorkplaceAddress(e.target.value)} />
+                <input className="field" placeholder="반납 주소" value={returnWorkplaceAddress} onChange={(e) => setReturnWorkplaceAddress(e.target.value)} />
                 <button
                   type="button"
                   className="cta ghost addr-btn"

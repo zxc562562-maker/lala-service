@@ -35,8 +35,8 @@ export async function createOrder(
   if (!customerId) return { ok: false, reason: '로그인이 필요합니다.' };
 
   if (!isValidDeliveryMethod(deliveryMethod)) return { ok: false, reason: '배송 방법을 선택해주세요.' };
-  // 직배송만 배송 시간을 맞출 수 있어 시간 선택이 필요하고, 퀵배송·택배는 시간 지정 없이 진행한다.
-  const needsSlot = deliveryMethod === 'DIRECT';
+  // 직배송·직접 픽업은 시간을 맞춰야 해서 시간 선택이 필요하고, 퀵배송·택배는 시간 지정 없이 진행한다.
+  const needsSlot = deliveryMethod === 'DIRECT' || deliveryMethod === 'PICKUP';
   if (needsSlot && !isValidDeliverySlot(deliverySlot ?? '')) return { ok: false, reason: '배송 시간을 선택해주세요.' };
   const finalSlot = needsSlot ? deliverySlot : null;
 

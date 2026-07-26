@@ -107,7 +107,6 @@
 .delivery-method-pills{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end}
 .pw-rule{font-size:10.5px;color:var(--muted);margin-top:-2px;margin-bottom:2px;min-height:auto}
 .return-addr-hint{font-size:10.5px;color:var(--espresso);font-weight:500;margin-top:-4px;margin-bottom:-2px;min-height:auto}
-.pickup-hint-oneline{font-size:11px;white-space:nowrap;min-height:auto}
 .hint.err{color:var(--wine)}
 .cta{margin-top:18px;width:100%;background:var(--espresso);color:#fff;border:none;padding:16px;border-radius:3px;font-family:var(--sans);font-size:15px;letter-spacing:.04em;cursor:pointer;transition:background .2s}
 .cta:disabled{opacity:.35;cursor:default}

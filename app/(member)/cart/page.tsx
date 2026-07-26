@@ -9,6 +9,7 @@ import { FLAT_DEPOSIT, PARCEL_ROUNDTRIP_FEE, QUICK_DELIVERY_FEE } from '@/lib/pr
 import { DELIVERY_SLOTS, DELIVERY_METHODS } from '@lala/shared/lib/delivery';
 import { updateProfile, type Profile } from '@/lib/account-actions';
 import { formatPhone } from '@/lib/phone-format';
+import { openAddressSearch } from '@/lib/address-search';
 import DeliveryInfoForm, { type DeliveryInfoFormHandle } from '@/components/DeliveryInfoForm';
 
 const won = (n: number) => n.toLocaleString('ko-KR') + '원';
@@ -32,6 +33,12 @@ export default function CartPage() {
   const [otherCartConflicts, setOtherCartConflicts] = useState<Set<string>>(new Set());
   const [profile, setProfile] = useState<Profile | null>(null);
   const [pickupPhone, setPickupPhone] = useState('');
+  // 직접 픽업 반납 방식 — 기본은 직접 반납(매장으로 직접 가져다줌), 켜면 반납 수거를 요청해
+  // 직배송의 반납 주소 입력과 동일한 방식으로 반납지를 지정할 수 있다.
+  const [pickupReturnRequested, setPickupReturnRequested] = useState(false);
+  const [pickupReturnAddress, setPickupReturnAddress] = useState('');
+  const [pickupReturnJibun, setPickupReturnJibun] = useState('');
+  const [pickupReturnDetailAddress, setPickupReturnDetailAddress] = useState('');
   const deliveryFormRef = useRef<DeliveryInfoFormHandle>(null);
 
   // 직접 픽업 전화번호 입력란은 회원이 아직 손대지 않았을 때만 프로필 값으로 채워준다
@@ -81,12 +88,13 @@ export default function CartPage() {
     });
   }
 
-  // 퀵배송·택배·직접 픽업은 시간까지 맞춰서 배송해줄 수 없어 시간 알약 자체를 못 고르게 한다.
-  const timeSlotDisabled = deliveryMethod === 'QUICK' || deliveryMethod === 'PARCEL' || deliveryMethod === 'PICKUP';
+  // 퀵배송·택배는 시간까지 맞춰서 배송해줄 수 없어 시간 알약 자체를 못 고르게 한다.
+  // 직접 픽업은 직배송과 동일하게 시간을 맞춰서 온다.
+  const timeSlotDisabled = deliveryMethod === 'QUICK' || deliveryMethod === 'PARCEL';
 
   function pickDeliveryMethod(id: string) {
     setDeliveryMethod(id);
-    if (id === 'QUICK' || id === 'PARCEL' || id === 'PICKUP') setSlot(null);
+    if (id === 'QUICK' || id === 'PARCEL') setSlot(null);
   }
 
   function checkout() {
@@ -105,7 +113,10 @@ export default function CartPage() {
           deliveryPhone: pickupPhone,
           deliveryRecipientName: profile.name,
           deliveryInStore: true,
-          returnInStore: true,
+          returnInStore: !pickupReturnRequested,
+          returnAddress: pickupReturnRequested ? pickupReturnAddress : undefined,
+          returnJibun: pickupReturnRequested ? pickupReturnJibun : undefined,
+          returnDetailAddress: pickupReturnRequested ? pickupReturnDetailAddress : undefined,
         });
         if (!res.ok) { setErr(res.reason ?? '전화번호를 확인해주세요.'); return; }
       } else {
@@ -268,7 +279,7 @@ export default function CartPage() {
             {visibleSlots.length === 0 ? (
               <span className="delivery-slot-empty">오늘은 배송 가능한 시간이 없어요. 다른 날짜를 선택해주세요.</span>
             ) : timeSlotDisabled ? (
-              <span className="delivery-slot-empty">퀵배송·택배·직접 픽업은 시간을 맞춰 보내드리기 어려워요.</span>
+              <span className="delivery-slot-empty">퀵배송·택배는 시간을 맞춰 보내드리기 어려워요.</span>
             ) : visibleSlots.map((s) => (
               <button
                 key={s.id}
@@ -296,8 +307,7 @@ export default function CartPage() {
         </div>
         {deliveryMethod === 'PICKUP' && (
           <div className="pickup-summary-block">
-            <p className="hint pickup-hint-oneline" style={{ margin: 0 }}>매장에서 직접 픽업하고 반납도 매장으로 직접 가져다주시면 돼요.</p>
-            <div className="phone-row" style={{ marginTop: 8, alignItems: 'center' }}>
+            <div className="phone-row" style={{ alignItems: 'center' }}>
               <span className="field-section field-section-plain" style={{ margin: 0, flexShrink: 0 }}>전화번호</span>
               <input
                 className="field field-phone-fit"
@@ -307,6 +317,45 @@ export default function CartPage() {
                 onChange={(e) => setPickupPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
               />
             </div>
+
+            <div className="toggle-group-row" style={{ marginTop: 8 }}>
+              <label className="toggle-group-item">
+                <span>직접 반납</span>
+                <span className="ios-toggle">
+                  <input type="checkbox" checked={!pickupReturnRequested} onChange={(e) => setPickupReturnRequested(!e.target.checked)} />
+                  <span className="ios-slider" />
+                </span>
+              </label>
+              <label className="toggle-group-item">
+                <span>반납 요청</span>
+                <span className="ios-toggle">
+                  <input type="checkbox" checked={pickupReturnRequested} onChange={(e) => setPickupReturnRequested(e.target.checked)} />
+                  <span className="ios-slider" />
+                </span>
+              </label>
+            </div>
+
+            {pickupReturnRequested && (
+              <>
+                <div className="field-section" style={{ marginTop: 8, marginBottom: 6 }}>반납 주소</div>
+                <div className="addr-row">
+                  <input className="field" placeholder="반납 주소" value={pickupReturnAddress} onChange={(e) => setPickupReturnAddress(e.target.value)} />
+                  <button
+                    type="button"
+                    className="cta ghost addr-btn"
+                    onClick={() => openAddressSearch((r) => { setPickupReturnAddress(r.roadAddress); setPickupReturnJibun(r.jibunAddress); })}
+                  >주소 검색</button>
+                </div>
+                {pickupReturnJibun && <div className="addr-jibun">지번 주소: {pickupReturnJibun}</div>}
+                <input
+                  className="field"
+                  style={{ marginTop: 8 }}
+                  placeholder="세부 주소 (건물명, 호수)"
+                  value={pickupReturnDetailAddress}
+                  onChange={(e) => setPickupReturnDetailAddress(e.target.value)}
+                />
+              </>
+            )}
           </div>
         )}
       </div>
