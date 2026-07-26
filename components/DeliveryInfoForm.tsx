@@ -48,8 +48,10 @@ export interface DeliveryInfoFormHandle {
  */
 const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
   profile: Profile; onSaved?: () => void; showSaveButton?: boolean; restrictedToHome?: boolean; isParcelDelivery?: boolean;
-  showModeButtons?: boolean;
-}>(function DeliveryInfoForm({ profile, onSaved, showSaveButton = true, restrictedToHome = false, isParcelDelivery = false, showModeButtons = true }, ref) {
+  showModeButtons?: boolean; autoSelectMode?: boolean;
+}>(function DeliveryInfoForm({
+  profile, onSaved, showSaveButton = true, restrictedToHome = false, isParcelDelivery = false, showModeButtons = true, autoSelectMode = true,
+}, ref) {
   const router = useRouter();
   const initMode = initialMode(profile);
   // 패널 열림 상태(mode)는 마지막으로 저장된 배송 방법(집/근무지)을 기본값으로 삼는다 —
@@ -66,11 +68,14 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
   // 모드 버튼 줄이 숨겨지는 순간엔 선택을 풀어뒀다가(예전에 눌러둔 게 엉뚱하게 남아있는 버그 방지),
   // 다시 나타나는 순간엔 마지막으로 저장된 주소 모드(initMode)를 기본값으로 자동 선택해준다 —
   // 단, 회원이 이미 이번 화면에서 직접 다른 모드를 눌러뒀다면(cur가 null이 아니면) 덮어쓰지 않는다.
+  // 내 정보 페이지처럼 그냥 훑어보러 온 화면에선 autoSelectMode=false로 꺼서 셋 다 접혀 있게 둔다
+  // (카트 페이지의 결제 흐름에서만 마지막으로 쓴 방법을 미리 열어주는 게 의미가 있음).
   useEffect(() => {
     if (!showModeButtons) { setMode(null); return; }
+    if (!autoSelectMode) return;
     const fallback = restrictedToHome ? (initMode === 'home' ? 'home' : null) : initMode;
     setMode((cur) => cur ?? fallback);
-  }, [showModeButtons, restrictedToHome, initMode]);
+  }, [showModeButtons, restrictedToHome, initMode, autoSelectMode]);
 
   // 퀵배송·택배는 회수(반납 수거)를 별도 장소로 지정할 수 없어 배송지와 항상 동일하게 고정한다.
   useEffect(() => {

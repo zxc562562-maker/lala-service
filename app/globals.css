@@ -18,12 +18,12 @@
 .look-view-toggle .who{margin-left:0;margin-right:auto;font-size:11.5px}
 
 /* 계정 관련 링크(예전엔 헤더에 있었음) — 화면 맨 아래 고정, 스크롤해도 항상 노출 */
-.site-footer-nav{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:3px;position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--paper);padding:12px 28px;border-top:1px solid var(--line);font-size:11.5px;letter-spacing:.02em}
+.site-footer-nav{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:3px;position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--paper);padding:6px 28px;border-top:1px solid var(--line);font-size:11.5px;letter-spacing:.02em}
 .site-footer-nav a,.site-footer-nav .linklike{color:var(--espresso);white-space:nowrap}
 .site-footer-nav a:hover,.site-footer-nav .linklike:hover{color:var(--wine)}
 .site-footer-nav .nav-guide{text-decoration:underline;text-underline-offset:2px}
 /* 고정 하단 바에 본문이 가려지지 않게 여백 확보 */
-.page-with-account-footer{padding-bottom:52px}
+.page-with-account-footer{padding-bottom:36px}
 @media(max-width:600px){
   .wordmark{font-size:36px}
   .gold-rule{width:104px}
@@ -285,7 +285,7 @@ html{scroll-snap-type:y mandatory;scroll-padding-top:var(--scroll-offset, 154px)
 .look-cover{aspect-ratio:4/5;border-radius:3px;border:1px solid var(--line);display:block;width:100%;object-fit:cover}
 .look-meta{padding:10px 2px 0}
 /* 한 개씩 보기: 룩 1개가 화면을 거의 꽉 채우고, 스크롤하면 다음 룩으로 스냅 */
-.look-grid:not(.look-grid-triple) .look-cover{aspect-ratio:auto;height:calc(100dvh - var(--scroll-offset, 154px) - var(--footer-h, 52px));scroll-snap-align:start}
+.look-grid:not(.look-grid-triple) .look-cover{aspect-ratio:auto;height:calc(100dvh - var(--scroll-offset, 154px) - var(--footer-h, 36px));scroll-snap-align:start}
 .look-title{font-family:var(--sans);font-size:16px;letter-spacing:.04em;color:var(--espresso)}
 .look-sub{font-size:11.5px;color:var(--muted);margin-top:3px}
 .look-detail{padding-top:6px}
@@ -472,6 +472,9 @@ html{scroll-snap-type:y mandatory;scroll-padding-top:var(--scroll-offset, 154px)
 .toggle-group{display:flex;flex-direction:column}
 .delivery-mode-row{display:flex;flex-direction:column;gap:8px;margin-top:6px}
 .delivery-mode-btn{width:66.6%;align-self:center;margin-top:0;padding:10px;font-size:12.5px}
+/* 기본 .cta:hover가 배경을 어둡게 칠해서(.ghost의 wine 글자색과 겹쳐 "검정 바탕 빨간 글씨"처럼 보임) —
+   눌러도(모바일에선 탭 후 hover가 계속 유지됨) 아무 상태변화 없게 무효화 */
+.delivery-mode-btn:not(:disabled):hover{background:none}
 .field-section:first-of-type{margin-top:0}
 .phone-row{display:flex;gap:8px}
 .addr-row{display:flex;gap:8px}

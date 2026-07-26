@@ -100,12 +100,26 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
         </div>
 
         <div style={{ marginTop: 14 }}>
-          <DeliveryInfoForm profile={profile} />
+          <DeliveryInfoForm profile={profile} autoSelectMode={false} />
         </div>
 
         <PushNotificationToggle />
 
-        <div className="field-section pf-row-label-marketing-fit" style={{ marginTop: 14 }}>마케팅 정보 수신 동의</div>
+        <label className="pf-row" style={{ marginTop: 14, borderBottom: 'none', cursor: 'pointer' }}>
+          <span className="field-section pf-row-label-marketing-fit" style={{ margin: 0 }}>마케팅 정보 수신 동의</span>
+          <span className="ios-toggle">
+            <input
+              type="checkbox"
+              checked={marketingLookbook && marketingPromotion && marketingDaily}
+              onChange={(e) => {
+                setMarketingLookbook(e.target.checked);
+                setMarketingPromotion(e.target.checked);
+                setMarketingDaily(e.target.checked);
+              }}
+            />
+            <span className="ios-slider" />
+          </span>
+        </label>
         <label className="pf-row" style={{ borderBottom: 'none', cursor: 'pointer' }}>
           <span className="pf-row-label pf-row-label-marketing-fit">룩북 업로드 소식</span>
           <span className="ios-toggle">
@@ -114,14 +128,14 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
           </span>
         </label>
         <label className="pf-row" style={{ borderBottom: 'none', cursor: 'pointer' }}>
-          <span className="pf-row-label pf-row-label-marketing-fit">할인·이벤트 프로모션</span>
+          <span className="pf-row-label pf-row-label-marketing-fit">프로모션(할인·이벤트) 소식</span>
           <span className="ios-toggle">
             <input type="checkbox" checked={marketingPromotion} onChange={(e) => setMarketingPromotion(e.target.checked)} />
             <span className="ios-slider" />
           </span>
         </label>
         <label className="pf-row" style={{ borderBottom: 'none', cursor: 'pointer' }}>
-          <span className="pf-row-label pf-row-label-marketing-fit">데일리 코디 추천(예정)</span>
+          <span className="pf-row-label pf-row-label-marketing-fit">데일리 코디 추천</span>
           <span className="ios-toggle">
             <input type="checkbox" checked={marketingDaily} onChange={(e) => setMarketingDaily(e.target.checked)} />
             <span className="ios-slider" />
