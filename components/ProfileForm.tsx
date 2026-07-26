@@ -103,7 +103,7 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
         </div>
 
         <div style={{ marginTop: 14 }}>
-          <DeliveryInfoForm profile={profile} autoSelectMode={false} showPickupOption={false} />
+          <DeliveryInfoForm profile={profile} autoSelectMode={false} />
         </div>
 
         <PushNotificationToggle />

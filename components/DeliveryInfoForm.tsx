@@ -14,7 +14,6 @@ import { formatPhone } from '@/lib/phone-format';
 type Mode = DeliveryMode | null;
 
 function initialMode(profile: Profile): Mode {
-  if (profile.deliveryInStore) return 'pickup';
   if (profile.workplace) return 'workplace';
   if (profile.deliveryAddress) return 'home';
   return null;
@@ -48,10 +47,9 @@ export interface DeliveryInfoFormHandle {
  */
 const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
   profile: Profile; onSaved?: () => void; showSaveButton?: boolean; restrictedToHome?: boolean; isParcelDelivery?: boolean;
-  showModeButtons?: boolean; autoSelectMode?: boolean; showPickupOption?: boolean;
+  showModeButtons?: boolean; autoSelectMode?: boolean;
 }>(function DeliveryInfoForm({
   profile, onSaved, showSaveButton = true, restrictedToHome = false, isParcelDelivery = false, showModeButtons = true, autoSelectMode = true,
-  showPickupOption = true,
 }, ref) {
   const router = useRouter();
   const initMode = initialMode(profile);
@@ -59,10 +57,10 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
   // 회원이 지난번에 집으로 받았으면 집으로 받기 패널을, 근무지로 받았으면 근무지 패널을 미리 열어준다.
   const [mode, setMode] = useState<Mode>(null);
 
-  // 카트에서 퀵배송·택배를 고르면 근무지/직접 픽업·회수는 불가능해져 자택만 남긴다 —
+  // 카트에서 퀵배송·택배를 고르면 근무지는 불가능해져 자택만 남긴다 —
   // 이미 그 모드가 선택돼 있었다면 선택을 풀어 다시 고르게 한다.
   useEffect(() => {
-    if (restrictedToHome && (mode === 'workplace' || mode === 'pickup')) setMode(null);
+    if (restrictedToHome && mode === 'workplace') setMode(null);
   }, [restrictedToHome, mode]);
 
   // 이 컴포넌트는 배송 방법이 바뀌어도(직배송↔퀵배송·택배) 언마운트되지 않고 계속 살아있다.
@@ -336,15 +334,14 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
     try {
       const isHome = mode === 'home';
       const isWorkplace = mode === 'workplace';
-      const isPickup = mode === 'pickup';
 
       const currentAddress = isHome ? homeAddress : isWorkplace ? workplaceAddress : '';
       const currentJibun = isHome ? homeJibun : isWorkplace ? workplaceJibun : '';
       const currentDetail = isHome ? homeDetailAddress : isWorkplace ? workplaceDetailAddress : '';
 
-      const finalAddress = isPickup ? undefined : currentAddress;
-      const finalDetail = isPickup ? undefined : currentDetail;
-      const finalJibun = isPickup ? undefined : currentJibun;
+      const finalAddress = currentAddress;
+      const finalDetail = currentDetail;
+      const finalJibun = currentJibun;
       const finalEntrance = isHome ? entrancePassword : undefined;
       const finalZonecode = isHome ? homeZonecode : undefined;
       const finalWorkplace = isWorkplace ? workplace : undefined;
@@ -359,9 +356,9 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
       // 자택만 회수지에 "공동현관 비밀번호"가 있음(근무지 회수지엔 해당 입력란이 없음)
       const returnSrcEntranceOrLocation = isHome ? returnEntrancePassword : undefined;
 
-      const finalReturnAddress = isPickup ? undefined : (useSeparateReturn ? returnSrcAddress : finalAddress);
-      const finalReturnJibun = isPickup ? undefined : (useSeparateReturn ? returnSrcJibun : finalJibun);
-      const finalReturnDetail = isPickup ? undefined : (useSeparateReturn ? returnSrcDetail : finalDetail);
+      const finalReturnAddress = useSeparateReturn ? returnSrcAddress : finalAddress;
+      const finalReturnJibun = useSeparateReturn ? returnSrcJibun : finalJibun;
+      const finalReturnDetail = useSeparateReturn ? returnSrcDetail : finalDetail;
       const finalReturnEntrance = useSeparateReturn ? returnSrcEntranceOrLocation : finalEntrance;
       // 반납 메시지는 자택에서 회수지를 따로 지정했을 때만 의미가 있음(동일이면 배송 메시지로 충분)
       const finalReturnMessage = isHome && useSeparateReturn ? returnMessage : undefined;
@@ -387,8 +384,8 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
         deliveryPhone: phone,
         deliveryRecipientName: recipientName,
         workplace: finalWorkplace,
-        deliveryInStore: isPickup,
-        returnInStore: isPickup,
+        deliveryInStore: false,
+        returnInStore: false,
       });
       if (res.ok) {
         setOk(true);
@@ -582,23 +579,24 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
     </>
   );
 
-  // 근무지/직접 픽업·회수는 기존과 동일하게 맨 끝에 받는사람+전화번호+저장 버튼을 붙인다.
-  // 자택 모드는 전화번호가 배송 메시지 바로 아래로 올라가므로 footer엔 저장 버튼만 남는다.
-  const footer = (
-    <>
-      {recipientField}
-      {phoneField}
-      {saveTail}
-    </>
-  );
-
   return (
     <>
     {showModeButtons && (
     <div className="delivery-mode-row">
-      <button type="button" className={`cta ghost delivery-mode-btn ${mode === 'home' ? 'active' : ''}`} onClick={() => selectMode('home')}>
-        집으로 받기
-      </button>
+      <div className="delivery-mode-btns-row">
+        <button type="button" className={`cta ghost delivery-mode-btn ${mode === 'home' ? 'active' : ''}`} onClick={() => selectMode('home')}>
+          집으로 받기
+        </button>
+        {!restrictedToHome && (
+          <button
+            type="button"
+            className={`cta ghost delivery-mode-btn ${mode === 'workplace' ? 'active' : ''}`}
+            onClick={() => selectMode('workplace')}
+          >
+            근무지로 받기
+          </button>
+        )}
+      </div>
       {mode === 'home' && (
         <div className="optional-panel">
           <div className="field-section-row" style={{ marginTop: 0 }}>
@@ -635,7 +633,7 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
           {recipientField}
           {phoneField}
 
-          <div className="toggle-group-row" style={{ marginTop: -3 }}>
+          <div className="toggle-group-row" style={{ marginTop: -3, justifyContent: restrictedToHome ? 'flex-start' : 'space-between' }}>
             <label className="toggle-group-item">
               <span>기본 배송지 등록</span>
               <span className="ios-toggle">
@@ -716,15 +714,6 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
         </div>
       )}
 
-      {!restrictedToHome && (
-      <button
-        type="button"
-        className={`cta ghost delivery-mode-btn ${mode === 'workplace' ? 'active' : ''}`}
-        onClick={() => selectMode('workplace')}
-      >
-        근무지로 받기
-      </button>
-      )}
       {!restrictedToHome && mode === 'workplace' && (
         <div className="optional-panel">
           <div className="field-section-row" style={{ marginTop: 0 }}>
@@ -802,22 +791,6 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
           )}
 
           {saveTail}
-        </div>
-      )}
-
-      {!restrictedToHome && showPickupOption && (
-      <button
-        type="button"
-        className={`cta ghost delivery-mode-btn ${mode === 'pickup' ? 'active' : ''}`}
-        onClick={() => selectMode('pickup')}
-      >
-        직접 픽업반납
-      </button>
-      )}
-      {!restrictedToHome && showPickupOption && mode === 'pickup' && (
-        <div className="optional-panel">
-          <p className="hint pickup-hint-oneline" style={{ margin: 0 }}>매장에서 직접 픽업하고 반납도 매장으로 직접 가져다주시면 돼요.</p>
-          {footer}
         </div>
       )}
 

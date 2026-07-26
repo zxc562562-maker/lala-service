@@ -125,6 +125,8 @@
 /* 카트 페이지 하단: 룩북 보기(왼쪽, 고정폭) + 결제하기(오른쪽, 나머지 폭 전부) 한 줄 배치 */
 .cart-checkout-row{display:flex;align-items:center;gap:8px;margin-top:18px}
 .cart-checkout-btn{flex:1;white-space:nowrap}
+.cart-look-link{white-space:nowrap;flex-shrink:0}
+.pickup-summary-block{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
 .cart-page{padding:8px 0 40px;max-width:560px;margin:0 auto}
 /* 카트 페이지만 헤더 "로그아웃"과 우측을 맞추기 위해 공용 .cart-page의 폭 제한(체크아웃·결제 페이지 등과
    공유)을 풀고 .detail과 동일한 -18px 보정을 적용한다 — 다른 .cart-page 사용처는 그대로 둠. */
@@ -501,10 +503,16 @@ html{scroll-snap-type:y mandatory;scroll-padding-top:var(--scroll-offset, 154px)
 .toggle-group-item{display:flex;align-items:center;gap:4px;cursor:pointer}
 .toggle-group-item span{font-size:9.5px;color:var(--muted);white-space:nowrap}
 .delivery-mode-row{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+/* 직배송처럼 집/근무지 버튼이 둘 다 뜰 때는 한 줄에 나란히(각자 폭 절반씩) */
+.delivery-mode-btns-row{display:flex;gap:8px}
+.delivery-mode-btns-row .delivery-mode-btn{width:auto;flex:1;align-self:auto}
 .delivery-mode-btn{width:66.6%;align-self:center;margin-top:0;padding:10px;font-size:12.5px}
 /* 기본 .cta:hover가 배경을 어둡게 칠해서(.ghost의 wine 글자색과 겹쳐 "검정 바탕 빨간 글씨"처럼 보임) —
    눌러도(모바일에선 탭 후 hover가 계속 유지됨) 아무 상태변화 없게 무효화 */
 .delivery-mode-btn:not(:disabled):hover{background:none}
+/* 선택된 배송 방법 버튼을 결제하기 버튼과 같은 색으로 — 뭘 골랐는지 한눈에 구분되게 */
+.delivery-mode-btn.active{background:var(--espresso);color:#fff;border-color:var(--espresso)}
+.delivery-mode-btn.active:not(:disabled):hover{background:var(--espresso)}
 .field-section:first-of-type{margin-top:0}
 .phone-row{display:flex;gap:8px}
 .addr-row{display:flex;gap:8px}

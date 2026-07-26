@@ -7,7 +7,8 @@ import { getCartPageData, removeCartItem, type CartLine } from '@/lib/cart-actio
 import { iso, toDate, addDays, todayISO, billableDays } from '@lala/shared/lib/domain/reservation';
 import { FLAT_DEPOSIT, PARCEL_ROUNDTRIP_FEE, QUICK_DELIVERY_FEE } from '@/lib/pricing';
 import { DELIVERY_SLOTS, DELIVERY_METHODS } from '@lala/shared/lib/delivery';
-import type { Profile } from '@/lib/account-actions';
+import { updateProfile, type Profile } from '@/lib/account-actions';
+import { formatPhone } from '@/lib/phone-format';
 import DeliveryInfoForm, { type DeliveryInfoFormHandle } from '@/components/DeliveryInfoForm';
 
 const won = (n: number) => n.toLocaleString('ko-KR') + '원';
@@ -30,7 +31,14 @@ export default function CartPage() {
   const [err, setErr] = useState<string | null>(null);
   const [otherCartConflicts, setOtherCartConflicts] = useState<Set<string>>(new Set());
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [pickupPhone, setPickupPhone] = useState('');
   const deliveryFormRef = useRef<DeliveryInfoFormHandle>(null);
+
+  // 직접 픽업 전화번호 입력란은 회원이 아직 손대지 않았을 때만 프로필 값으로 채워준다
+  // (이미 이번 화면에서 직접 고친 값이 있으면 refresh() 이후에도 덮어쓰지 않음).
+  useEffect(() => {
+    if (profile) setPickupPhone((cur) => cur || profile.deliveryPhone || profile.phone || '');
+  }, [profile]);
 
   async function refresh() {
     const { items: its, busyDates, closedDates, otherConflicts, profile: prof } = await getCartPageData();
@@ -73,12 +81,12 @@ export default function CartPage() {
     });
   }
 
-  // 퀵배송·택배는 시간까지 맞춰서 배송해줄 수 없어 시간 알약 자체를 못 고르게 한다.
-  const timeSlotDisabled = deliveryMethod === 'QUICK' || deliveryMethod === 'PARCEL';
+  // 퀵배송·택배·직접 픽업은 시간까지 맞춰서 배송해줄 수 없어 시간 알약 자체를 못 고르게 한다.
+  const timeSlotDisabled = deliveryMethod === 'QUICK' || deliveryMethod === 'PARCEL' || deliveryMethod === 'PICKUP';
 
   function pickDeliveryMethod(id: string) {
     setDeliveryMethod(id);
-    if (id === 'QUICK' || id === 'PARCEL') setSlot(null);
+    if (id === 'QUICK' || id === 'PARCEL' || id === 'PICKUP') setSlot(null);
   }
 
   function checkout() {
@@ -86,8 +94,24 @@ export default function CartPage() {
     if (!timeSlotDisabled && !effectiveSlot) return;
     setErr(null);
     startTransition(async () => {
-      const res = await deliveryFormRef.current?.save();
-      if (res && !res.ok) { setErr(res.reason ?? '배송 정보를 확인해주세요.'); return; }
+      if (deliveryMethod === 'PICKUP') {
+        if (!profile) return;
+        const res = await updateProfile({
+          name: profile.name,
+          phone: profile.phone ?? '',
+          marketingLookbook: profile.marketingLookbook,
+          marketingPromotion: profile.marketingPromotion,
+          marketingDaily: profile.marketingDaily,
+          deliveryPhone: pickupPhone,
+          deliveryRecipientName: profile.name,
+          deliveryInStore: true,
+          returnInStore: true,
+        });
+        if (!res.ok) { setErr(res.reason ?? '전화번호를 확인해주세요.'); return; }
+      } else {
+        const res = await deliveryFormRef.current?.save();
+        if (res && !res.ok) { setErr(res.reason ?? '배송 정보를 확인해주세요.'); return; }
+      }
       const slotParam = timeSlotDisabled ? '' : effectiveSlot;
       router.push(`/checkout?co=${iso(start)}&ret=${iso(end)}&slot=${slotParam}&method=${deliveryMethod}`);
     });
@@ -244,7 +268,7 @@ export default function CartPage() {
             {visibleSlots.length === 0 ? (
               <span className="delivery-slot-empty">오늘은 배송 가능한 시간이 없어요. 다른 날짜를 선택해주세요.</span>
             ) : timeSlotDisabled ? (
-              <span className="delivery-slot-empty">퀵배송·택배는 시간을 맞춰 보내드리기 어려워요.</span>
+              <span className="delivery-slot-empty">퀵배송·택배·직접 픽업은 시간을 맞춰 보내드리기 어려워요.</span>
             ) : visibleSlots.map((s) => (
               <button
                 key={s.id}
@@ -270,9 +294,24 @@ export default function CartPage() {
             <span className="subscription-note">월 정기구독을 희망하시면 카카오톡 채널로 문의주세요 :)</span>
           </span>
         </div>
+        {deliveryMethod === 'PICKUP' && (
+          <div className="pickup-summary-block">
+            <p className="hint pickup-hint-oneline" style={{ margin: 0 }}>매장에서 직접 픽업하고 반납도 매장으로 직접 가져다주시면 돼요.</p>
+            <div className="phone-row" style={{ marginTop: 8, alignItems: 'center' }}>
+              <span className="field-section field-section-plain" style={{ margin: 0, flexShrink: 0 }}>전화번호</span>
+              <input
+                className="field field-phone-fit"
+                style={{ textAlign: 'right', marginLeft: 'auto' }}
+                placeholder="010-0000-0000"
+                value={formatPhone(pickupPhone)}
+                onChange={(e) => setPickupPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
-      {profile && (
+      {profile && deliveryMethod !== 'PICKUP' && (
         <div style={{ marginTop: 18 }}>
           <DeliveryInfoForm
             ref={deliveryFormRef}
@@ -289,7 +328,7 @@ export default function CartPage() {
       {err && <div className="hint err" style={{ marginTop: 8 }}>{err}</div>}
 
       <div className="cart-checkout-row">
-        <Link className="cta ghost look-cart-cta outline" href="/looks">룩북 보기</Link>
+        <Link className="pf-withdraw cart-look-link" href="/looks">룩북 보기</Link>
         <button
           className="cta look-cart-cta cart-checkout-btn"
           disabled={!valid || !deliveryMethod || (!timeSlotDisabled && !effectiveSlot) || pending}
