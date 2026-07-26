@@ -410,11 +410,6 @@ html{scroll-snap-type:y mandatory;scroll-padding-top:var(--scroll-offset, 154px)
    라벨+힌트를 하나의 flex 아이템으로 묶어서 .pf-row의 space-between 레이아웃을 그대로 쓴다. */
 .pf-label-with-hint{display:flex;align-items:center;gap:4px;flex-shrink:0}
 .pf-pw-hint{font-size:9.5px;color:var(--muted);white-space:nowrap}
-/* 배송 정보 폼의 "기본 배송지 등록"/"즐겨찾기 추가"/"회수 주소(근무지) 동일"/"이 근무지에서 회수" 토글 라벨 —
-   "배송 주소" 라벨(.field-section)과 같은 10.5px로 통일. 글자 수가 서로 달라도 고정 너비 안에서
-   자간을 최소한으로만 벌려 오른쪽 끝(토글 시작 지점)이 서로 맞춰지도록 함(너비는 가장 긴 라벨
-   기준으로 딱 맞춰 자간이 최대한 좁게 보이도록 함). */
-.pf-row-label-fit{width:85px;font-size:10.5px;text-align:justify;text-align-last:justify;text-justify:inter-character}
 /* 마케팅 정보 수신 동의 섹션 — 섹션 제목과 토글 라벨 3개(길이가 서로 다름) 전부 같은 스타일(고정폭+자간)로
    통일해 오른쪽 끝을 서로 맞춘다. */
 .pf-row-label-marketing-fit{width:130px;font-size:10.5px;white-space:nowrap;text-align:left}
@@ -493,10 +488,6 @@ html{scroll-snap-type:y mandatory;scroll-padding-top:var(--scroll-offset, 154px)
    "추가로" 쌓인다(둘이 상쇄되지 않음) — DeliveryInfoForm.tsx의 일부 행이 특정 픽셀 간격을
    맞추려고 음수 marginTop(예: -3px = 목표 4px - 이 gap 7px)을 쓰는 이유가 이것이다. */
 .optional-panel{display:flex;flex-direction:column;gap:7px;margin-top:7px;padding:10px 12px;background:#fff;border:1px solid #EDE6DC;border-radius:4px}
-/* 기본 배송지 등록/즐겨찾기 추가/회수 관련 토글 그룹 — .optional-panel의 flex gap(7px)이
-   그룹 내부 토글 사이에도 그대로 적용돼 촘촘하게 묶이지 않던 것을, 그룹을 감싸는 컨테이너로
-   분리해 내부 gap을 0으로 만들고 각 행 자체의 padding(2px 0)만으로 최소 여백을 준다. */
-.toggle-group{display:flex;flex-direction:column}
 /* 기본 배송지 등록/즐겨찾기 추가/반납 주소 동일 — 한 줄에 나란히: 라벨(작게)+토글을 세로로 묶은
    칸 3개를 가로로 배치. 자간 트릭 없이 일반 자간의 작은 텍스트를 씀. */
 .toggle-group-row{display:flex;justify-content:space-between;gap:6px}
