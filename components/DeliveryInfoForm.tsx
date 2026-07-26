@@ -118,6 +118,7 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
   const [returnJibun, setReturnJibun] = useState('');
   const [returnDetailAddress, setReturnDetailAddress] = useState('');
   const [returnEntrancePassword, setReturnEntrancePassword] = useState('');
+  const [returnMessage, setReturnMessage] = useState(profile.returnMessage ?? '');
 
   // 근무지로 받기 전용: 회수 근무지가 배송 근무지와 다를 때만 끔(기본은 동일) — 자택 쪽과 동일한 패턴이며
   // 완전히 독립된 state를 씀(자택 회수지와 섞이지 않도록).
@@ -362,6 +363,8 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
       const finalReturnJibun = isPickup ? undefined : (useSeparateReturn ? returnSrcJibun : finalJibun);
       const finalReturnDetail = isPickup ? undefined : (useSeparateReturn ? returnSrcDetail : finalDetail);
       const finalReturnEntrance = useSeparateReturn ? returnSrcEntranceOrLocation : finalEntrance;
+      // 반납 메시지는 자택에서 회수지를 따로 지정했을 때만 의미가 있음(동일이면 배송 메시지로 충분)
+      const finalReturnMessage = isHome && useSeparateReturn ? returnMessage : undefined;
 
       const res = await updateProfile({
         // 이름/전화번호/마케팅 동의는 이 화면에서 편집하지 않으므로 profile의 기존 값 그대로 같이 전송
@@ -380,6 +383,7 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
         returnJibun: finalReturnJibun,
         returnDetailAddress: finalReturnDetail,
         returnEntrancePassword: finalReturnEntrance,
+        returnMessage: finalReturnMessage,
         deliveryPhone: phone,
         deliveryRecipientName: recipientName,
         workplace: finalWorkplace,
@@ -554,7 +558,7 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
   );
 
   const phoneField = (
-    <div className="phone-row" style={{ marginTop: 8, alignItems: 'center' }}>
+    <div className="phone-row" style={{ marginTop: 4, alignItems: 'center' }}>
       <span className="field-section field-section-plain" style={{ margin: 0, flexShrink: 0 }}>전화번호</span>
       <input
         className="field field-phone-fit"
@@ -617,13 +621,13 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
           <input className="field" placeholder="세부 주소 (건물명, 호수)" value={homeDetailAddress} onChange={(e) => setHomeDetailAddress(e.target.value)} />
 
           {!isParcelDelivery && (
-            <div className="phone-row" style={{ marginTop: 8, alignItems: 'center' }}>
+            <div className="phone-row" style={{ marginTop: 4, alignItems: 'center' }}>
               <span className="field-section field-section-plain" style={{ margin: 0, flexShrink: 0 }}>공동현관 비밀번호</span>
               <input className="field" style={{ textAlign: 'right' }} placeholder="자유 출입시 미기재" value={entrancePassword} onChange={(e) => setEntrancePassword(e.target.value)} />
             </div>
           )}
 
-          <div className="phone-row" style={{ marginTop: 8, alignItems: 'center' }}>
+          <div className="phone-row" style={{ marginTop: 4, alignItems: 'center' }}>
             <span className="field-section field-section-plain" style={{ margin: 0, flexShrink: 0 }}>배송 메시지</span>
             <input className="field" style={{ textAlign: 'right' }} value={deliveryMessage} onChange={(e) => setDeliveryMessage(e.target.value)} />
           </div>
@@ -631,7 +635,7 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
           {recipientField}
           {phoneField}
 
-          <div className="toggle-group-row" style={{ marginTop: 8 }}>
+          <div className="toggle-group-row" style={{ marginTop: 4 }}>
             <label className="toggle-group-item">
               <span>기본 배송지 등록</span>
               <span className="ios-toggle">
@@ -685,13 +689,26 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
               {returnJibun && <div className="addr-jibun">지번 주소: {returnJibun}</div>}
               <input className="field" placeholder="세부 주소 (건물명, 호수)" value={returnDetailAddress} onChange={(e) => setReturnDetailAddress(e.target.value)} />
 
-              <div className="field-section" style={{ marginTop: 14, marginBottom: 0 }}>공동현관 비밀번호</div>
-              <input
-                className="field"
-                placeholder="공동현관 비밀번호 (자유 출입시 미기재)"
-                value={returnEntrancePassword}
-                onChange={(e) => setReturnEntrancePassword(e.target.value)}
-              />
+              <div className="phone-row" style={{ marginTop: 4, alignItems: 'center' }}>
+                <span className="field-section field-section-plain" style={{ margin: 0, flexShrink: 0 }}>공동현관 비밀번호</span>
+                <input
+                  className="field"
+                  style={{ textAlign: 'right' }}
+                  placeholder="자유 출입시 미기재"
+                  value={returnEntrancePassword}
+                  onChange={(e) => setReturnEntrancePassword(e.target.value)}
+                />
+              </div>
+
+              <div className="phone-row" style={{ marginTop: 4, alignItems: 'center' }}>
+                <span className="field-section field-section-plain" style={{ margin: 0, flexShrink: 0 }}>반납 메시지</span>
+                <input
+                  className="field"
+                  style={{ textAlign: 'right' }}
+                  value={returnMessage}
+                  onChange={(e) => setReturnMessage(e.target.value)}
+                />
+              </div>
             </>
           )}
 
@@ -724,11 +741,11 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
           </div>
           {workplaceJibun && <div className="addr-jibun">지번 주소: {workplaceJibun}</div>}
           <input className="field" placeholder="근무지 상호명 입력" value={workplaceDetailAddress} onChange={(e) => setWorkplaceDetailAddress(e.target.value)} />
-          <input className="field" style={{ marginTop: 8 }} placeholder="배송 상세 위치 (ex. 대기실 테이블 위, 10번 로커 등)" value={workplace} onChange={(e) => setWorkplace(e.target.value)} />
+          <input className="field" style={{ marginTop: 4 }} placeholder="배송 상세 위치 (ex. 대기실 테이블 위, 10번 로커 등)" value={workplace} onChange={(e) => setWorkplace(e.target.value)} />
 
           {phoneField}
 
-          <div className="toggle-group-row" style={{ marginTop: 8 }}>
+          <div className="toggle-group-row" style={{ marginTop: 4 }}>
             <label className="toggle-group-item">
               <span>기본 근무지 등록</span>
               <span className="ios-toggle">

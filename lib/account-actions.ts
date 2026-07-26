@@ -25,6 +25,7 @@ export interface Profile {
   returnJibun: string | null;
   returnDetailAddress: string | null;
   returnEntrancePassword: string | null;
+  returnMessage: string | null;
   deliveryPhone: string | null;
   deliveryRecipientName: string | null;
   workplace: string | null;
@@ -44,7 +45,7 @@ export async function getProfile(): Promise<Profile | null> {
       marketing_lookbook_consent,marketing_promotion_consent,marketing_daily_consent,
       delivery_address,delivery_jibun_address,delivery_zonecode,delivery_detail_address,entrance_password,
       delivery_message,delivery_ring_bell,delivery_knock,delivery_leave_at_handle,
-      return_address,return_jibun_address,return_detail_address,return_entrance_password,
+      return_address,return_jibun_address,return_detail_address,return_entrance_password,return_message,
       delivery_phone,delivery_recipient_name,workplace,delivery_in_store,return_in_store,preferred_delivery_method
     `)
     .eq('auth_user_id', user.id).maybeSingle();
@@ -68,6 +69,7 @@ export async function getProfile(): Promise<Profile | null> {
     returnJibun: data?.return_jibun_address ?? null,
     returnDetailAddress: data?.return_detail_address ?? null,
     returnEntrancePassword: data?.return_entrance_password ?? null,
+    returnMessage: data?.return_message ?? null,
     deliveryPhone: data?.delivery_phone ?? null,
     deliveryRecipientName: data?.delivery_recipient_name ?? null,
     workplace: data?.workplace ?? null,
@@ -98,6 +100,7 @@ export interface UpdateProfileInput {
   returnJibun?: string;
   returnDetailAddress?: string;
   returnEntrancePassword?: string;
+  returnMessage?: string;
   deliveryPhone?: string;
   deliveryRecipientName?: string;
   workplace?: string;
@@ -155,6 +158,7 @@ export async function updateProfile(input: UpdateProfileInput): Promise<{ ok: bo
       return_jibun_address: input.returnJibun?.trim() || null,
       return_detail_address: input.returnDetailAddress?.trim() || null,
       return_entrance_password: input.returnEntrancePassword?.trim() || null,
+      return_message: input.returnMessage?.trim() || null,
       delivery_phone: input.deliveryPhone?.trim() || null,
       delivery_recipient_name: input.deliveryRecipientName?.trim() || null,
       workplace: input.workplace?.trim() || null,
