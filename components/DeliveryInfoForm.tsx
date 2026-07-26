@@ -560,7 +560,6 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
         className="field field-name-fit"
         style={{ textAlign: 'right', marginLeft: 'auto' }}
         placeholder="받는 분 성함"
-        maxLength={6}
         value={recipientName}
         onChange={(e) => setRecipientName(e.target.value)}
       />
@@ -783,7 +782,10 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
 
           {!sameAsWorkplaceDelivery && (
             <>
-              <p className="hint return-addr-hint" style={{ marginTop: 14 }}>반납 장소 미정일 경우 반납일 낮 12:00 전까지 카카오톡 채널로 연락주세요.</p>
+              <p className="hint return-addr-hint" style={{ marginTop: 14, textAlign: 'right' }}>
+                반납 장소는 반납일 낮 12:00 전까지 입력하셔야 해요.<br />
+                낮 12:00 이후 반납 장소 입력시 추가금액이 발생될 수 있어요.
+              </p>
               <div className="field-section-row" style={{ marginTop: 0 }}>
                 <div className="field-section" style={{ margin: 0 }}>반납 주소</div>
                 {renderAddressPills('workplaceReturn')}
