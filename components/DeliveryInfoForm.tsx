@@ -558,11 +558,11 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
   );
 
   const phoneField = (
-    <div className="phone-row" style={{ marginTop: 4, alignItems: 'center' }}>
+    <div className="phone-row" style={{ marginTop: -3, alignItems: 'center' }}>
       <span className="field-section field-section-plain" style={{ margin: 0, flexShrink: 0 }}>전화번호</span>
       <input
         className="field field-phone-fit"
-        style={{ textAlign: 'right' }}
+        style={{ textAlign: 'right', marginLeft: 'auto' }}
         placeholder="010-0000-0000"
         value={formatPhone(phone)}
         onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
@@ -621,13 +621,13 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
           <input className="field" placeholder="세부 주소 (건물명, 호수)" value={homeDetailAddress} onChange={(e) => setHomeDetailAddress(e.target.value)} />
 
           {!isParcelDelivery && (
-            <div className="phone-row" style={{ marginTop: 4, alignItems: 'center' }}>
+            <div className="phone-row" style={{ marginTop: -3, alignItems: 'center' }}>
               <span className="field-section field-section-plain" style={{ margin: 0, flexShrink: 0 }}>공동현관 비밀번호</span>
               <input className="field" style={{ textAlign: 'right' }} placeholder="자유 출입시 미기재" value={entrancePassword} onChange={(e) => setEntrancePassword(e.target.value)} />
             </div>
           )}
 
-          <div className="phone-row" style={{ marginTop: 4, alignItems: 'center' }}>
+          <div className="phone-row" style={{ marginTop: -3, alignItems: 'center' }}>
             <span className="field-section field-section-plain" style={{ margin: 0, flexShrink: 0 }}>배송 메시지</span>
             <input className="field" style={{ textAlign: 'right' }} value={deliveryMessage} onChange={(e) => setDeliveryMessage(e.target.value)} />
           </div>
@@ -635,7 +635,7 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
           {recipientField}
           {phoneField}
 
-          <div className="toggle-group-row" style={{ marginTop: 4 }}>
+          <div className="toggle-group-row" style={{ marginTop: -3 }}>
             <label className="toggle-group-item">
               <span>기본 배송지 등록</span>
               <span className="ios-toggle">
@@ -689,7 +689,7 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
               {returnJibun && <div className="addr-jibun">지번 주소: {returnJibun}</div>}
               <input className="field" placeholder="세부 주소 (건물명, 호수)" value={returnDetailAddress} onChange={(e) => setReturnDetailAddress(e.target.value)} />
 
-              <div className="phone-row" style={{ marginTop: 4, alignItems: 'center' }}>
+              <div className="phone-row" style={{ marginTop: -3, alignItems: 'center' }}>
                 <span className="field-section field-section-plain" style={{ margin: 0, flexShrink: 0 }}>공동현관 비밀번호</span>
                 <input
                   className="field"
@@ -700,7 +700,7 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
                 />
               </div>
 
-              <div className="phone-row" style={{ marginTop: 4, alignItems: 'center' }}>
+              <div className="phone-row" style={{ marginTop: -3, alignItems: 'center' }}>
                 <span className="field-section field-section-plain" style={{ margin: 0, flexShrink: 0 }}>반납 메시지</span>
                 <input
                   className="field"
@@ -741,11 +741,11 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
           </div>
           {workplaceJibun && <div className="addr-jibun">지번 주소: {workplaceJibun}</div>}
           <input className="field" placeholder="근무지 상호명 입력" value={workplaceDetailAddress} onChange={(e) => setWorkplaceDetailAddress(e.target.value)} />
-          <input className="field" style={{ marginTop: 4 }} placeholder="배송 상세 위치 (ex. 대기실 테이블 위, 10번 로커 등)" value={workplace} onChange={(e) => setWorkplace(e.target.value)} />
+          <input className="field" style={{ marginTop: -3 }} placeholder="배송 상세 위치 (ex. 대기실 테이블 위, 10번 로커 등)" value={workplace} onChange={(e) => setWorkplace(e.target.value)} />
 
           {phoneField}
 
-          <div className="toggle-group-row" style={{ marginTop: 4 }}>
+          <div className="toggle-group-row" style={{ marginTop: -3 }}>
             <label className="toggle-group-item">
               <span>기본 근무지 등록</span>
               <span className="ios-toggle">

@@ -394,6 +394,10 @@ html{scroll-snap-type:y mandatory;scroll-padding-top:var(--scroll-offset, 154px)
 .pf-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:5px 0;border-bottom:1px solid var(--line)}
 .pf-row label{font-size:12px;color:var(--muted);flex-shrink:0;width:50px;display:inline-block;text-align:justify;text-align-last:justify;text-justify:inter-character}
 .pf-row-label{font-size:12px;color:var(--muted);flex-shrink:0;display:inline-block}
+/* 비밀번호 라벨 옆에 규칙(자수 제한) 힌트를 붙일 때 — 라벨 자체의 고정폭/정렬은 그대로 두고
+   라벨+힌트를 하나의 flex 아이템으로 묶어서 .pf-row의 space-between 레이아웃을 그대로 쓴다. */
+.pf-label-with-hint{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.pf-pw-hint{font-size:9.5px;color:var(--muted);white-space:nowrap}
 /* 배송 정보 폼의 "기본 배송지 등록"/"즐겨찾기 추가"/"회수 주소(근무지) 동일"/"이 근무지에서 회수" 토글 라벨 —
    "배송 주소" 라벨(.field-section)과 같은 10.5px로 통일. 글자 수가 서로 달라도 고정 너비 안에서
    자간을 최소한으로만 벌려 오른쪽 끝(토글 시작 지점)이 서로 맞춰지도록 함(너비는 가장 긴 라벨
@@ -473,6 +477,9 @@ html{scroll-snap-type:y mandatory;scroll-padding-top:var(--scroll-offset, 154px)
    대신 일반 자간을 쓴다. */
 .field-section-plain{letter-spacing:normal;text-transform:none}
 .optional-toggle{width:100%;margin-top:6px;font-size:12.5px;padding:10px}
+/* gap:7px가 모든 직계 자식 사이에 자동으로 더해지므로, 자식 쪽의 marginTop은 이 7px 위에
+   "추가로" 쌓인다(둘이 상쇄되지 않음) — DeliveryInfoForm.tsx의 일부 행이 특정 픽셀 간격을
+   맞추려고 음수 marginTop(예: -3px = 목표 4px - 이 gap 7px)을 쓰는 이유가 이것이다. */
 .optional-panel{display:flex;flex-direction:column;gap:7px;margin-top:7px;padding:10px 12px;background:#fff;border:1px solid #EDE6DC;border-radius:4px}
 /* 기본 배송지 등록/즐겨찾기 추가/회수 관련 토글 그룹 — .optional-panel의 flex gap(7px)이
    그룹 내부 토글 사이에도 그대로 적용돼 촘촘하게 묶이지 않던 것을, 그룹을 감싸는 컨테이너로
