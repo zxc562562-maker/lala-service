@@ -128,6 +128,8 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
   const [returnWorkplaceAddress, setReturnWorkplaceAddress] = useState('');
   const [returnWorkplaceJibun, setReturnWorkplaceJibun] = useState('');
   const [returnWorkplaceDetailAddress, setReturnWorkplaceDetailAddress] = useState('');
+  const [returnWorkplaceEntrancePassword, setReturnWorkplaceEntrancePassword] = useState('');
+  const [returnWorkplaceMessage, setReturnWorkplaceMessage] = useState('');
 
   // "기본 배송지 등록"/"즐겨찾기 추가" 토글 — 켜면 별칭을 입력받는 팝업이 뜨고, 확인하면 바로
   // 즐겨찾기에 등록된다(토글 자체는 상태를 들고 있지 않고, 팝업이 닫히면 항상 꺼진 상태로 되돌아감).
@@ -363,15 +365,15 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
       const returnSrcAddress = isHome ? returnAddress : returnWorkplaceAddress;
       const returnSrcJibun = isHome ? returnJibun : returnWorkplaceJibun;
       const returnSrcDetail = isHome ? returnDetailAddress : returnWorkplaceDetailAddress;
-      // 자택만 회수지에 "공동현관 비밀번호"가 있음(근무지 회수지엔 해당 입력란이 없음)
-      const returnSrcEntranceOrLocation = isHome ? returnEntrancePassword : undefined;
+      const returnSrcEntranceOrLocation = isHome ? returnEntrancePassword : returnWorkplaceEntrancePassword;
+      const returnSrcMessage = isHome ? returnMessage : returnWorkplaceMessage;
 
       const finalReturnAddress = useSeparateReturn ? returnSrcAddress : finalAddress;
       const finalReturnJibun = useSeparateReturn ? returnSrcJibun : finalJibun;
       const finalReturnDetail = useSeparateReturn ? returnSrcDetail : finalDetail;
       const finalReturnEntrance = useSeparateReturn ? returnSrcEntranceOrLocation : finalEntrance;
-      // 반납 메시지는 자택에서 회수지를 따로 지정했을 때만 의미가 있음(동일이면 배송 메시지로 충분)
-      const finalReturnMessage = isHome && useSeparateReturn ? returnMessage : undefined;
+      // 반납 메시지는 배송지와 회수지를 따로 지정했을 때만 의미가 있음(동일이면 배송 메시지로 충분)
+      const finalReturnMessage = useSeparateReturn ? returnSrcMessage : undefined;
 
       const res = await updateProfile({
         // 이름/전화번호/마케팅 동의는 이 화면에서 편집하지 않으므로 profile의 기존 값 그대로 같이 전송
@@ -555,11 +557,12 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
     <div className="phone-row" style={{ marginTop: 8, alignItems: 'center' }}>
       <span className="field-section field-section-plain" style={{ margin: 0, flexShrink: 0 }}>받는 사람</span>
       <input
-        className="field"
-        style={{ textAlign: 'right' }}
+        className="field field-name-fit"
+        style={{ textAlign: 'right', marginLeft: 'auto' }}
         placeholder="받는 분 성함"
+        maxLength={6}
         value={recipientName}
-        onChange={(e) => setRecipientName(e.target.value)}
+        onChange={(e) => setRecipientName(e.target.value.slice(0, 6))}
       />
     </div>
   );
@@ -800,6 +803,27 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
                 value={returnWorkplaceDetailAddress}
                 onChange={(e) => setReturnWorkplaceDetailAddress(e.target.value)}
               />
+
+              <div className="phone-row" style={{ marginTop: 8, alignItems: 'center' }}>
+                <span className="field-section field-section-plain" style={{ margin: 0, flexShrink: 0 }}>공동현관 비밀번호</span>
+                <input
+                  className="field"
+                  style={{ textAlign: 'right' }}
+                  placeholder="자유 출입시 미기재"
+                  value={returnWorkplaceEntrancePassword}
+                  onChange={(e) => setReturnWorkplaceEntrancePassword(e.target.value)}
+                />
+              </div>
+
+              <div className="phone-row" style={{ marginTop: 8, alignItems: 'center' }}>
+                <span className="field-section field-section-plain" style={{ margin: 0, flexShrink: 0 }}>반납 메시지</span>
+                <input
+                  className="field"
+                  style={{ textAlign: 'right' }}
+                  value={returnWorkplaceMessage}
+                  onChange={(e) => setReturnWorkplaceMessage(e.target.value)}
+                />
+              </div>
             </>
           )}
 

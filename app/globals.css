@@ -546,6 +546,8 @@ html{scroll-snap-type:y mandatory;scroll-padding-top:var(--scroll-offset, 154px)
 /* .phone-row .field(위 규칙, 클래스 2개)가 .field-phone-fit(클래스 1개)보다 선택자 우선순위가 높아서
    전화번호 입력란 폭 제한이 실제로는 전혀 반영되지 않고 있었다 — 우선순위를 맞춰 확실히 이기게 함. */
 .phone-row .field-phone-fit{flex:none;width:calc(13ch + 24px)}
+/* 받는 사람 — 한글 6자 제한에 맞춘 폭(.pf-w5 등 기존 한글 이름 입력란과 같은 ch 기반 근사치) */
+.phone-row .field-name-fit{flex:none;width:calc(6ch + 24px)}
 .phone-btn{width:auto;margin-top:0;flex-shrink:0;padding:0 14px;font-size:12px;white-space:nowrap}
 .phone-code-row{display:flex;gap:8px;margin-top:5px}
 .phone-code-row .field{flex:1;min-width:0}
