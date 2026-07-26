@@ -98,9 +98,6 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
   const [homeZonecode, setHomeZonecode] = useState(initMode === 'home' ? profile.deliveryZonecode ?? '' : '');
   const [homeDetailAddress, setHomeDetailAddress] = useState(initMode === 'home' ? profile.deliveryDetailAddress ?? '' : '');
   const [entrancePassword, setEntrancePassword] = useState(profile.entrancePassword ?? '');
-  const [ringBell, setRingBell] = useState(profile.deliveryRingBell);
-  const [knock, setKnock] = useState(profile.deliveryKnock);
-  const [leaveAtHandle, setLeaveAtHandle] = useState(profile.deliveryLeaveAtHandle);
   const [deliveryMessage, setDeliveryMessage] = useState(profile.deliveryMessage ?? '');
 
   // 근무지로 받기 전용 주소 — 위와 대칭
@@ -351,9 +348,6 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
       const finalZonecode = isHome ? homeZonecode : undefined;
       const finalWorkplace = isWorkplace ? workplace : undefined;
       const finalDeliveryMessage = isHome ? deliveryMessage : undefined;
-      const finalRingBell = isHome ? ringBell : false;
-      const finalKnock = isHome ? knock : false;
-      const finalLeaveAtHandle = isHome ? leaveAtHandle : false;
 
       // "회수 주소/근무지 동일" 껐을 때만 따로 입력한 회수지 사용, 그 외엔 배송지와 전부 동일.
       // 자택·근무지 각각 독립된 회수 state를 쓴다(자택 회수지와 근무지 회수지가 서로 안 섞이도록).
@@ -382,9 +376,6 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
         deliveryDetailAddress: finalDetail,
         entrancePassword: finalEntrance,
         deliveryMessage: finalDeliveryMessage,
-        deliveryRingBell: finalRingBell,
-        deliveryKnock: finalKnock,
-        deliveryLeaveAtHandle: finalLeaveAtHandle,
         returnAddress: finalReturnAddress,
         returnJibun: finalReturnJibun,
         returnDetailAddress: finalReturnDetail,
@@ -549,30 +540,34 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
     </div>
   );
 
-  const footer = (
+  const recipientField = restrictedToHome && (
+    <div className="phone-row" style={{ marginTop: 14, alignItems: 'center' }}>
+      <span className="field-section" style={{ margin: 0, flexShrink: 0 }}>받는 사람</span>
+      <input
+        className="field"
+        style={{ textAlign: 'right' }}
+        placeholder="받는 분 성함"
+        value={recipientName}
+        onChange={(e) => setRecipientName(e.target.value)}
+      />
+    </div>
+  );
+
+  const phoneField = (
+    <div className="phone-row" style={{ marginTop: 14, alignItems: 'center' }}>
+      <span className="field-section" style={{ margin: 0, flexShrink: 0 }}>전화번호</span>
+      <input
+        className="field"
+        style={{ textAlign: 'right' }}
+        placeholder="전화번호 ( - 없이 01000000000)"
+        value={formatPhone(phone)}
+        onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
+      />
+    </div>
+  );
+
+  const saveTail = (
     <>
-      {restrictedToHome && (
-        <div className="phone-row" style={{ marginTop: 14, alignItems: 'center' }}>
-          <span className="field-section" style={{ margin: 0, flexShrink: 0 }}>받는 사람</span>
-          <input
-            className="field"
-            style={{ textAlign: 'right' }}
-            placeholder="받는 분 성함"
-            value={recipientName}
-            onChange={(e) => setRecipientName(e.target.value)}
-          />
-        </div>
-      )}
-      <div className="phone-row" style={{ marginTop: 14, alignItems: 'center' }}>
-        <span className="field-section" style={{ margin: 0, flexShrink: 0 }}>전화번호</span>
-        <input
-          className="field"
-          style={{ textAlign: 'right' }}
-          placeholder="전화번호 ( - 없이 01000000000)"
-          value={formatPhone(phone)}
-          onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
-        />
-      </div>
       {err && <div className="hint err">{err}</div>}
       {ok && <div className="hint" style={{ color: 'var(--sage)' }}>저장되었습니다.</div>}
       {showSaveButton && (
@@ -580,6 +575,16 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
           {pending ? '저장 중…' : '배송 정보 저장'}
         </button>
       )}
+    </>
+  );
+
+  // 근무지/직접 픽업·회수는 기존과 동일하게 맨 끝에 받는사람+전화번호+저장 버튼을 붙인다.
+  // 자택 모드는 전화번호가 배송 메시지 바로 아래로 올라가므로 footer엔 저장 버튼만 남는다.
+  const footer = (
+    <>
+      {recipientField}
+      {phoneField}
+      {saveTail}
     </>
   );
 
@@ -612,32 +617,23 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
           <input className="field" placeholder="세부 주소 (건물명, 호수)" value={homeDetailAddress} onChange={(e) => setHomeDetailAddress(e.target.value)} />
 
           {!isParcelDelivery && (
-            <>
-              <div className="field-section" style={{ marginTop: 14, marginBottom: 0 }}>공동현관 비밀번호</div>
-              <input className="field" placeholder="공동현관 비밀번호 (자유 출입시 미기재)" value={entrancePassword} onChange={(e) => setEntrancePassword(e.target.value)} />
-            </>
+            <div className="phone-row" style={{ marginTop: 14, alignItems: 'center' }}>
+              <span className="field-section" style={{ margin: 0, flexShrink: 0 }}>공동현관 비밀번호</span>
+              <input className="field" style={{ textAlign: 'right' }} placeholder="자유 출입시 미기재" value={entrancePassword} onChange={(e) => setEntrancePassword(e.target.value)} />
+            </div>
           )}
 
-          <div className="delivery-checkbox-row" style={{ marginTop: 14 }}>
-            <label className="delivery-checkbox">
-              <input type="checkbox" checked={ringBell} onChange={(e) => setRingBell(e.target.checked)} />
-              벨
-            </label>
-            <label className="delivery-checkbox">
-              <input type="checkbox" checked={knock} onChange={(e) => setKnock(e.target.checked)} />
-              노크
-            </label>
-            <label className="delivery-checkbox">
-              <input type="checkbox" checked={leaveAtHandle} onChange={(e) => setLeaveAtHandle(e.target.checked)} />
-              손잡이
-            </label>
+          <div className="phone-row" style={{ marginTop: 14, alignItems: 'center' }}>
+            <span className="field-section" style={{ margin: 0, flexShrink: 0 }}>배송 메시지</span>
+            <input className="field" style={{ textAlign: 'right' }} value={deliveryMessage} onChange={(e) => setDeliveryMessage(e.target.value)} />
           </div>
-          <div className="field-section" style={{ marginTop: 14, marginBottom: 0 }}>배송 메시지</div>
-          <input className="field" placeholder="배송 기사님께 남길 메시지" value={deliveryMessage} onChange={(e) => setDeliveryMessage(e.target.value)} />
 
-          <div className="toggle-group" style={{ marginTop: 14 }}>
-            <label className="pf-row" style={{ padding: '2px 0', borderBottom: 'none', cursor: 'pointer' }}>
-              <span className="pf-row-label pf-row-label-fit">기본 배송지 등록</span>
+          {recipientField}
+          {phoneField}
+
+          <div className="toggle-group-row" style={{ marginTop: 14 }}>
+            <label className="toggle-group-item">
+              <span>기본 배송지 등록</span>
               <span className="ios-toggle">
                 <input
                   type="checkbox"
@@ -648,8 +644,8 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
               </span>
             </label>
 
-            <label className="pf-row" style={{ padding: '2px 0', borderBottom: 'none', cursor: 'pointer' }}>
-              <span className="pf-row-label pf-row-label-fit">즐겨찾기 추가</span>
+            <label className="toggle-group-item">
+              <span>즐겨찾기 추가</span>
               <span className="ios-toggle">
                 <input
                   type="checkbox"
@@ -661,8 +657,8 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
             </label>
 
             {!restrictedToHome && (
-              <label className="pf-row" style={{ padding: '2px 0', borderBottom: 'none', cursor: 'pointer' }}>
-                <span className="pf-row-label pf-row-label-fit">회수 주소 동일</span>
+              <label className="toggle-group-item">
+                <span>반납 주소 동일</span>
                 <span className="ios-toggle">
                   <input type="checkbox" checked={sameAsDelivery} onChange={(e) => setSameAsDelivery(e.target.checked)} />
                   <span className="ios-slider" />
@@ -699,7 +695,7 @@ const DeliveryInfoForm = forwardRef<DeliveryInfoFormHandle, {
             </>
           )}
 
-          {footer}
+          {saveTail}
         </div>
       )}
 

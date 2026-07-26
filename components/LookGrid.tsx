@@ -118,7 +118,7 @@ export default function LookGrid({
             aria-label="한 개씩 보기"
             onClick={() => changeView('single')}
           >
-            <svg width="32" height="32" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" fill="currentColor" /></svg>
+            <svg width="25" height="25" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" fill="currentColor" /></svg>
           </button>
           <button
             type="button"
@@ -126,7 +126,7 @@ export default function LookGrid({
             aria-label="여러 개 한번에 보기"
             onClick={() => changeView('triple')}
           >
-            <svg width="32" height="32" viewBox="0 0 16 16" fill="none">
+            <svg width="25" height="25" viewBox="0 0 16 16" fill="none">
               <rect x="2" y="2" width="5" height="5" fill="currentColor" />
               <rect x="9" y="2" width="5" height="5" fill="currentColor" />
               <rect x="2" y="9" width="5" height="5" fill="currentColor" />
@@ -139,7 +139,7 @@ export default function LookGrid({
             aria-label={isLoggedIn ? '전체 상품 보기' : '가입하면 볼 수 있어요'}
             onClick={() => changeView('products')}
           >
-            <svg width="32" height="32" viewBox="0 0 16 16" fill="none">
+            <svg width="25" height="25" viewBox="0 0 16 16" fill="none">
               <rect x="2" y="2" width="3.3" height="3.3" fill="currentColor" />
               <rect x="6.7" y="2" width="7.3" height="3.3" fill="currentColor" />
               <rect x="2" y="6.35" width="3.3" height="3.3" fill="currentColor" />

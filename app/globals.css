@@ -15,7 +15,7 @@
 .nav-actions a,.nav-actions .linklike{white-space:nowrap}
 .nav-dot{color:var(--muted)}
 .who{color:var(--muted);letter-spacing:.02em;margin-left:10px;white-space:nowrap}
-.look-view-toggle .who{margin-left:0;margin-right:auto;font-size:11.5px}
+.look-view-toggle .who{margin-left:3px;margin-right:auto;font-size:13.5px;color:var(--espresso)}
 
 /* 계정 관련 링크(예전엔 헤더에 있었음) — 화면 맨 아래 고정, 스크롤해도 항상 노출 */
 .site-footer-nav{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:3px;position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--paper);padding:6px 28px;border-top:1px solid var(--line);font-size:11.5px;letter-spacing:.02em}
@@ -111,7 +111,9 @@
 .cta{margin-top:18px;width:100%;background:var(--espresso);color:#fff;border:none;padding:16px;border-radius:3px;font-family:var(--sans);font-size:15px;letter-spacing:.04em;cursor:pointer;transition:background .2s}
 .cta:disabled{opacity:.35;cursor:default}
 /* 텍스트 크기에 맞춰 좌우만 줄인 작은 버튼 (예: 수정하기, 배송 정보 저장) */
-.cta-fit{width:auto;display:inline-block;padding:9px 20px;font-size:13px}
+/* width:auto만으로는 flex-column 부모(.pf-form/.optional-panel)의 align-items:stretch 기본값 때문에
+   여전히 꽉 채워지므로, align-self로 늘어남 자체를 막아야 텍스트 크기에 맞게 보인다. */
+.cta-fit{width:auto;display:inline-block;align-self:flex-start;padding:9px 20px;font-size:13px}
 .cta:not(:disabled):hover{background:#0F0B08}
 .cta.ghost{background:none;color:var(--wine);border:1px solid var(--line)}
 /* 룩 상세 페이지의 CHECK THE CART — 기본 .cta보다 작게 */
@@ -277,9 +279,10 @@ html{scroll-snap-type:y mandatory;scroll-padding-top:var(--scroll-offset, 154px)
 .look-grid{display:grid;grid-template-columns:1fr;gap:0;margin:0 -28px}
 .look-view-toggle{display:flex;justify-content:flex-end;align-items:center;gap:8px;position:sticky;top:var(--header-h, 103px);z-index:15;background:var(--paper);margin:0 -28px;padding:9px 24px 9px 0;border-bottom:1px solid var(--line)}
 .look-view-btns{display:flex;gap:0}
-.look-view-btn{width:32px;height:32px;border:none;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);padding:0}
+.look-view-btn{width:25px;height:25px;border:none;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);padding:0}
 .look-view-btn.on{color:var(--espresso)}
 .look-view-btn.locked{opacity:.35}
+.look-view-btns .look-view-btn:last-child{margin-right:3px}
 .look-grid-triple{grid-template-columns:repeat(3,1fr) !important;gap:1px !important}
 .look-grid-triple .look-cover{aspect-ratio:4/5;border-radius:2px;border:none}
 .look-grid-triple .look-meta{display:none}
@@ -472,8 +475,11 @@ html{scroll-snap-type:y mandatory;scroll-padding-top:var(--scroll-offset, 154px)
    그룹 내부 토글 사이에도 그대로 적용돼 촘촘하게 묶이지 않던 것을, 그룹을 감싸는 컨테이너로
    분리해 내부 gap을 0으로 만들고 각 행 자체의 padding(2px 0)만으로 최소 여백을 준다. */
 .toggle-group{display:flex;flex-direction:column}
-.delivery-checkbox-row{display:flex;gap:16px}
-.delivery-checkbox{display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--espresso);cursor:pointer}
+/* 기본 배송지 등록/즐겨찾기 추가/반납 주소 동일 — 한 줄에 나란히: 라벨(작게)+토글을 세로로 묶은
+   칸 3개를 가로로 배치. 자간 트릭 없이 일반 자간의 작은 텍스트를 씀. */
+.toggle-group-row{display:flex;justify-content:space-between;gap:6px}
+.toggle-group-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
+.toggle-group-item span{font-size:9.5px;color:var(--muted);white-space:nowrap}
 .delivery-mode-row{display:flex;flex-direction:column;gap:8px;margin-top:6px}
 .delivery-mode-btn{width:66.6%;align-self:center;margin-top:0;padding:10px;font-size:12.5px}
 /* 기본 .cta:hover가 배경을 어둡게 칠해서(.ghost의 wine 글자색과 겹쳐 "검정 바탕 빨간 글씨"처럼 보임) —
