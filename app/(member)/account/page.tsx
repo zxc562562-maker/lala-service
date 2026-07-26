@@ -6,27 +6,13 @@ import { getCachedUser } from '@lala/shared/lib/auth-cache';
 import AccountDateFilter from '@/components/AccountDateFilter';
 import AccountOrderCard from '@/components/AccountOrderCard';
 import { DELIVERY_METHODS } from '@lala/shared/lib/delivery';
+import { getOrderStatusLabel, PROBLEM_LABEL, RESPONSE_LABEL } from '@/lib/order-status-labels';
 
 export const dynamic = 'force-dynamic';
 const won = (n: number) => n.toLocaleString('ko-KR') + '원';
 
 // 배송(SHIPPED) 시작 전까지만 취소 가능 — lib/payments-actions.ts의 cancelOrder 판단 기준과 동일하게 유지할 것.
 const CANCELLABLE_FULFILLMENT_STATUSES = ['ORDERED', 'PRE_INSPECTING', 'READY'];
-
-// 정상 진행 흐름(8단계): 주문결제 → 상품검수중 → 배송대기중 → 배송중 → 배송완료 → 반납접수 요청됨 → 반납검수중 → 완료
-const NORMAL_LABEL: Record<string, string> = {
-  ORDERED: '주문결제', PRE_INSPECTING: '상품검수중', READY: '배송대기중', SHIPPED: '배송중',
-  DELIVERED: '배송완료', RETURN_REQUESTED: '반납접수 요청됨', RETURN_INSPECTING: '반납검수중', REFUNDED: '반납 완료',
-  DEPOSIT_REFUNDED: '보증금 환불 완료', CANCELLED: '취소됨',
-};
-// 문제 발생 분기(레드 계열로 구분 표시)
-const PROBLEM_LABEL: Record<string, string> = {
-  PRE_INSPECT_ISSUE: '상품검수중 오염, 손상 확인', MISDELIVERED: '오배송', RETURN_ISSUE: '반납검수중 오염, 손상 확인',
-};
-// 문제 발생 시 상태 알약 아래에 한 번 더 보여줄 "우리 쪽 대응" 알약(옅은 회색 바탕, 브랜드색 글씨)
-const RESPONSE_LABEL: Record<string, string> = {
-  PRE_INSPECT_ISSUE: '깔끔히 수선·세탁 후 보내드릴게요.', MISDELIVERED: '오배송 확인되어 처리중이에요.', RETURN_ISSUE: '불필요한 분쟁이 발생되지 않게 확인·처리 중이에요.',
-};
 
 const PLACEHOLDER_STATUS: Record<string, string> = { ACTIVE: '예약됨', COMPLETED: '완료', CANCELLED: '취소됨' };
 
@@ -51,7 +37,11 @@ export default async function AccountPage({
   // 상태·분쟁 정보는 reservation이 아니라 payment_order(주문)에 있음 — 하나로 합쳐서 알약 하나로 보여줌
   let orderQuery = sb
     .from('payment_order')
-    .select('id,checkout,return_date,status,fulfillment_status,disputed,dispute_reason,delivery_method,return_courier,return_tracking_number');
+    .select(`
+      id,checkout,return_date,status,fulfillment_status,disputed,dispute_reason,delivery_method,
+      return_request_address,return_request_jibun_address,return_request_detail_address,
+      return_request_message,return_request_recipient_name,return_request_phone
+    `);
   if (from) orderQuery = orderQuery.gte('checkout', from);
   if (to) orderQuery = orderQuery.lte('checkout', to);
 
@@ -59,14 +49,18 @@ export default async function AccountPage({
   const [{ data }, { data: orders }] = await Promise.all([resvQuery, orderQuery]);
   type OrderInfo = {
     status: string; fulfillmentStatus: string; disputed: boolean; disputeReason: string | null; deliveryMethod: string | null;
-    returnCourier: string | null; returnTrackingNumber: string | null;
+    returnRequestAddress: string | null; returnRequestJibun: string | null; returnRequestDetailAddress: string | null;
+    returnRequestMessage: string | null; returnRequestRecipientName: string | null; returnRequestPhone: string | null;
   };
   const orderByOrderId = new Map<string, OrderInfo>();
   const orderByDate = new Map<string, OrderInfo>(); // payment_order_id가 없는 옛 예약용 대체 매칭
   for (const o of orders ?? []) {
     const info: OrderInfo = {
       status: o.status, fulfillmentStatus: o.fulfillment_status, disputed: o.disputed, disputeReason: o.dispute_reason,
-      deliveryMethod: o.delivery_method, returnCourier: o.return_courier, returnTrackingNumber: o.return_tracking_number,
+      deliveryMethod: o.delivery_method,
+      returnRequestAddress: o.return_request_address, returnRequestJibun: o.return_request_jibun_address,
+      returnRequestDetailAddress: o.return_request_detail_address, returnRequestMessage: o.return_request_message,
+      returnRequestRecipientName: o.return_request_recipient_name, returnRequestPhone: o.return_request_phone,
     };
     orderByOrderId.set(o.id, info);
     orderByDate.set(`${o.checkout}_${o.return_date}`, info);
@@ -111,7 +105,7 @@ export default async function AccountPage({
     let isProblem: boolean;
     if (info?.disputed) { label = info.disputeReason || '분쟁중'; isProblem = true; }
     else if (info && PROBLEM_LABEL[info.fulfillmentStatus]) { label = PROBLEM_LABEL[info.fulfillmentStatus]; isProblem = true; }
-    else if (info) { label = NORMAL_LABEL[info.fulfillmentStatus] ?? info.fulfillmentStatus; isProblem = false; }
+    else if (info) { label = getOrderStatusLabel(info.fulfillmentStatus, info.deliveryMethod); isProblem = false; }
     else { label = PLACEHOLDER_STATUS[first.status] ?? first.status; isProblem = false; } // 옛 예약(주문 정보 없음) 대체 표시
     // 문제 분기 상태일 때만(분쟁 여부와 무관하게) 우리 쪽 대응 메시지를 한 번 더 보여줌
     const response = info ? RESPONSE_LABEL[info.fulfillmentStatus] : undefined;
@@ -140,8 +134,14 @@ export default async function AccountPage({
         deliveryMethodLabel={deliveryMethodLabel}
         canRequestReturn={canRequestReturn}
         canManageReturnInfo={canManageReturnInfo}
-        returnCourier={info?.returnCourier ?? ''}
-        returnTrackingNumber={info?.returnTrackingNumber ?? ''}
+        returnRequestInitial={{
+          address: info?.returnRequestAddress ?? '',
+          jibun: info?.returnRequestJibun ?? '',
+          detailAddress: info?.returnRequestDetailAddress ?? '',
+          message: info?.returnRequestMessage ?? '',
+          recipientName: info?.returnRequestRecipientName ?? '',
+          phone: info?.returnRequestPhone ?? '',
+        }}
         swatches={items.map((r) => ({ id: r.id, color1: r.inventory_item.product.color_1, color2: r.inventory_item.product.color_2 }))}
       />,
     );

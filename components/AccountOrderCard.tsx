@@ -3,8 +3,7 @@
 import { useState, type MouseEvent } from 'react';
 import Link from 'next/link';
 import CancelOrderButton from './CancelOrderButton';
-import RequestReturnButton from './RequestReturnButton';
-import ReturnTrackingInfo from './ReturnTrackingInfo';
+import ReturnRequestForm, { type ReturnRequestFormInitial } from './ReturnRequestForm';
 
 export interface AccountOrderCardProps {
   orderId: string | null;
@@ -17,22 +16,22 @@ export interface AccountOrderCardProps {
   deliveryMethodLabel?: string;
   canRequestReturn: boolean;
   canManageReturnInfo: boolean;
-  returnCourier: string;
-  returnTrackingNumber: string;
+  returnRequestInitial: ReturnRequestFormInitial;
   swatches: { id: string; color1: string; color2: string }[];
 }
 
 export default function AccountOrderCard({
   orderId, checkoutDate, returnDate, label, isProblem, response, isCancellable,
-  deliveryMethodLabel, canRequestReturn, canManageReturnInfo,
-  returnCourier, returnTrackingNumber, swatches,
+  deliveryMethodLabel, canRequestReturn, canManageReturnInfo, returnRequestInitial, swatches,
 }: AccountOrderCardProps) {
-  const [returnInfoOpen, setReturnInfoOpen] = useState(false);
+  const [returnPanelOpen, setReturnPanelOpen] = useState(false);
+  const [returnEditing, setReturnEditing] = useState(false);
 
-  function toggleReturnInfo(e: MouseEvent) {
+  function toggleReturnPanel(e: MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
-    setReturnInfoOpen((v) => !v);
+    setReturnPanelOpen((v) => !v);
+    setReturnEditing(false);
   }
 
   const inner = (
@@ -52,11 +51,11 @@ export default function AccountOrderCard({
         {(response || canRequestReturn || canManageReturnInfo) && (
           <div className="resv-response-row">
             {response && <span className="resv-response">{response}</span>}
-            {canRequestReturn && orderId && <RequestReturnButton orderId={orderId} />}
-            {canManageReturnInfo && (
-              <button type="button" className="return-info-pill" onClick={toggleReturnInfo}>
-                반납정보
-              </button>
+            {canRequestReturn && orderId && (
+              <button type="button" className="request-return-pill" onClick={toggleReturnPanel}>반납접수요청</button>
+            )}
+            {canManageReturnInfo && orderId && (
+              <button type="button" className="return-info-pill" onClick={toggleReturnPanel}>반납 정보</button>
             )}
           </div>
         )}
@@ -71,11 +70,15 @@ export default function AccountOrderCard({
       ) : (
         <div className="resv-group">{inner}</div>
       )}
-      {canManageReturnInfo && returnInfoOpen && (
-        <ReturnTrackingInfo
-          courier={returnCourier}
-          trackingNumber={returnTrackingNumber}
-          onClose={() => setReturnInfoOpen(false)}
+      {(canRequestReturn || canManageReturnInfo) && orderId && returnPanelOpen && (
+        <ReturnRequestForm
+          orderId={orderId}
+          mode={canRequestReturn ? 'request' : 'manage'}
+          initial={returnRequestInitial}
+          editing={returnEditing}
+          onStartEdit={() => setReturnEditing(true)}
+          onCancelEdit={() => setReturnEditing(false)}
+          onSaved={() => { setReturnPanelOpen(false); setReturnEditing(false); }}
         />
       )}
     </>

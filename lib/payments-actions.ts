@@ -142,10 +142,25 @@ export async function cancelOrder(orderId: string): Promise<{ ok: true } | { ok:
   return { ok: true };
 }
 
-/** 택배 배송 건에 한해, 배송완료 후 고객이 직접 "반납 발송했어요"를 알리는 반납접수요청. */
-export async function requestReturn(orderId: string): Promise<{ ok: true } | { ok: false; reason: string }> {
+export interface ReturnRequestInput {
+  address: string;
+  jibun?: string;
+  detailAddress?: string;
+  message?: string;
+  recipientName?: string;
+  phone: string;
+}
+
+/**
+ * 택배 배송 건에 한해, 배송완료 후 고객이 반납지 주소를 알려주는 반납접수요청.
+ * (예전엔 고객이 직접 택배로 부치고 운송장번호만 알리는 방식이었는데, 우리가 수거하러 가는
+ * 방식으로 변경 — 회수 주소/메시지/받는사람/전화번호를 이 시점에 함께 받는다.)
+ */
+export async function submitReturnRequest(orderId: string, input: ReturnRequestInput): Promise<{ ok: true } | { ok: false; reason: string }> {
   const customerId = await resolveCustomerId();
   if (!customerId) return { ok: false, reason: '로그인이 필요합니다.' };
+  if (!input.address.trim()) return { ok: false, reason: '반납 주소를 입력해주세요.' };
+  if (!input.phone.trim()) return { ok: false, reason: '전화번호를 입력해주세요.' };
 
   const sb = supabaseAdmin();
   const { data: order } = await sb.from('payment_order').select('*').eq('id', orderId).eq('customer_id', customerId).maybeSingle();
@@ -157,10 +172,47 @@ export async function requestReturn(orderId: string): Promise<{ ok: true } | { o
     return { ok: false, reason: '배송완료 상태에서만 반납접수요청을 할 수 있어요.' };
   }
 
-  await sb.from('payment_order').update({ fulfillment_status: 'RETURN_REQUESTED', return_requested_at: new Date().toISOString() }).eq('id', orderId);
+  await sb.from('payment_order').update({
+    fulfillment_status: 'RETURN_REQUESTED',
+    return_requested_at: new Date().toISOString(),
+    return_request_address: input.address.trim(),
+    return_request_jibun_address: input.jibun?.trim() || null,
+    return_request_detail_address: input.detailAddress?.trim() || null,
+    return_request_message: input.message?.trim() || null,
+    return_request_recipient_name: input.recipientName?.trim() || null,
+    return_request_phone: input.phone.trim(),
+  }).eq('id', orderId);
 
   // 여기서는 일부러 revalidatePath를 호출하지 않는다 — 호출하면 이 서버 액션이 끝나는 즉시
   // Next.js가 자동으로 페이지를 새로고침해, "반납접수 완료" 안내를 보여주기도 전에 버튼이
   // 사라져버린다. 새로고침은 안내 모달을 닫을 때 클라이언트에서 router.refresh()로 직접 트리거한다.
+  return { ok: true };
+}
+
+/** 반납접수요청 이후, 아직 처리되지 않은 반납지 정보를 고객이 직접 수정한다. */
+export async function updateReturnRequest(orderId: string, input: ReturnRequestInput): Promise<{ ok: true } | { ok: false; reason: string }> {
+  const customerId = await resolveCustomerId();
+  if (!customerId) return { ok: false, reason: '로그인이 필요합니다.' };
+  if (!input.address.trim()) return { ok: false, reason: '반납 주소를 입력해주세요.' };
+  if (!input.phone.trim()) return { ok: false, reason: '전화번호를 입력해주세요.' };
+
+  const sb = supabaseAdmin();
+  const { data: order } = await sb.from('payment_order').select('*').eq('id', orderId).eq('customer_id', customerId).maybeSingle();
+  if (!order) return { ok: false, reason: '주문을 찾을 수 없습니다.' };
+  if (order.delivery_method !== 'PARCEL') return { ok: false, reason: '택배 배송 주문만 반납정보를 수정할 수 있어요.' };
+  if (order.disputed) return { ok: false, reason: '분쟁 처리 중인 주문은 반납정보를 수정할 수 없어요.' };
+  if (order.fulfillment_status !== 'RETURN_REQUESTED') {
+    return { ok: false, reason: '반납접수요청 상태에서만 반납정보를 수정할 수 있어요.' };
+  }
+
+  await sb.from('payment_order').update({
+    return_request_address: input.address.trim(),
+    return_request_jibun_address: input.jibun?.trim() || null,
+    return_request_detail_address: input.detailAddress?.trim() || null,
+    return_request_message: input.message?.trim() || null,
+    return_request_recipient_name: input.recipientName?.trim() || null,
+    return_request_phone: input.phone.trim(),
+  }).eq('id', orderId);
+
   return { ok: true };
 }
