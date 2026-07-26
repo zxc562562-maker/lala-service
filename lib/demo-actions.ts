@@ -17,9 +17,14 @@ export async function createDemoParcelOrder(): Promise<{ ok: true; orderId: stri
   const { data: customer } = await sb.from('customer').select('id').eq('auth_user_id', user.id).maybeSingle();
   if (!customer) return { ok: false, reason: '고객 정보를 찾을 수 없습니다.' };
 
-  // 실제 존재하는 재고 아이템을 그대로 빌려 쓴다(가짜 상품을 새로 안 만듦).
-  const { data: item } = await sb.from('inventory_item').select('id,product:product_id(id,name,daily_price)').limit(1).maybeSingle();
-  if (!item) return { ok: false, reason: '재고 상품이 없어 데모 주문을 만들 수 없어요. 관리자 웹에서 상품을 먼저 등록해주세요.' };
+  // 실제 존재하는 재고 아이템을 그대로 빌려 쓰되(가짜 상품을 새로 안 만듦), 이미 ACTIVE 예약이
+  // 걸려있는 아이템을 고르면 DB의 no_double_booking 배타 제약에 걸려 실패하므로, ACTIVE 예약이
+  // 하나도 없는(=날짜와 무관하게 안전한) 아이템을 찾을 때까지 후보를 넉넉히 훑는다.
+  const { data: busyRows } = await sb.from('reservation').select('item_id').eq('status', 'ACTIVE');
+  const busyItemIds = new Set((busyRows ?? []).map((r: { item_id: string }) => r.item_id));
+  const { data: candidates } = await sb.from('inventory_item').select('id,product:product_id(id,name,daily_price)').limit(50);
+  const item = (candidates ?? []).find((c) => !busyItemIds.has(c.id));
+  if (!item) return { ok: false, reason: '지금 예약 가능한(대여 중이지 않은) 재고가 없어 데모 주문을 만들 수 없어요.' };
   const product = item.product as unknown as { id: string; name: string; daily_price: number };
 
   const today = toDate(todayISO());
