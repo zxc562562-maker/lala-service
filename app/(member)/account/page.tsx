@@ -6,13 +6,10 @@ import { getCachedUser } from '@lala/shared/lib/auth-cache';
 import AccountDateFilter from '@/components/AccountDateFilter';
 import AccountOrderCard from '@/components/AccountOrderCard';
 import DemoOrderButton from '@/components/DemoOrderButton';
-import { getOrderStatusLabel, PROBLEM_LABEL, RESPONSE_LABEL } from '@/lib/order-status-labels';
+import { getOrderStatusLabel, isCancellableStatus, PROBLEM_LABEL, RESPONSE_LABEL } from '@/lib/order-status-labels';
 
 export const dynamic = 'force-dynamic';
 const won = (n: number) => n.toLocaleString('ko-KR') + '원';
-
-// 배송(SHIPPED) 시작 전까지만 취소 가능 — lib/payments-actions.ts의 cancelOrder 판단 기준과 동일하게 유지할 것.
-const CANCELLABLE_FULFILLMENT_STATUSES = ['ORDERED', 'PRE_INSPECTING', 'READY'];
 
 const PLACEHOLDER_STATUS: Record<string, string> = { ACTIVE: '예약됨', COMPLETED: '완료', CANCELLED: '취소됨' };
 
@@ -40,7 +37,8 @@ export default async function AccountPage({
     .select(`
       id,checkout,return_date,status,fulfillment_status,disputed,dispute_reason,delivery_method,
       return_request_address,return_request_jibun_address,return_request_detail_address,
-      return_request_message,return_request_recipient_name,return_request_phone
+      return_request_message,return_request_recipient_name,return_request_phone,
+      return_courier,return_tracking_number
     `);
   if (from) orderQuery = orderQuery.gte('checkout', from);
   if (to) orderQuery = orderQuery.lte('checkout', to);
@@ -51,6 +49,7 @@ export default async function AccountPage({
     status: string; fulfillmentStatus: string; disputed: boolean; disputeReason: string | null; deliveryMethod: string | null;
     returnRequestAddress: string | null; returnRequestJibun: string | null; returnRequestDetailAddress: string | null;
     returnRequestMessage: string | null; returnRequestRecipientName: string | null; returnRequestPhone: string | null;
+    returnCourier: string | null; returnTrackingNumber: string | null;
   };
   const orderByOrderId = new Map<string, OrderInfo>();
   const orderByDate = new Map<string, OrderInfo>(); // payment_order_id가 없는 옛 예약용 대체 매칭
@@ -61,6 +60,7 @@ export default async function AccountPage({
       returnRequestAddress: o.return_request_address, returnRequestJibun: o.return_request_jibun_address,
       returnRequestDetailAddress: o.return_request_detail_address, returnRequestMessage: o.return_request_message,
       returnRequestRecipientName: o.return_request_recipient_name, returnRequestPhone: o.return_request_phone,
+      returnCourier: o.return_courier, returnTrackingNumber: o.return_tracking_number,
     };
     orderByOrderId.set(o.id, info);
     orderByDate.set(`${o.checkout}_${o.return_date}`, info);
@@ -110,7 +110,7 @@ export default async function AccountPage({
     // 문제 분기 상태일 때만(분쟁 여부와 무관하게) 우리 쪽 대응 메시지를 한 번 더 보여줌
     const response = info ? RESPONSE_LABEL[info.fulfillmentStatus] : undefined;
     const isCancellable = !!info && info.status === 'PAID' && !info.disputed
-      && CANCELLABLE_FULFILLMENT_STATUSES.includes(info.fulfillmentStatus);
+      && isCancellableStatus(info.fulfillmentStatus, info.deliveryMethod);
     // 택배는 기사가 수거하지 않아 고객이 직접 반납 발송을 알려야 함 — 배송완료 상태에서만 노출.
     const canRequestReturn = !!info && info.deliveryMethod === 'PARCEL' && info.status === 'PAID' && !info.disputed
       && info.fulfillmentStatus === 'DELIVERED';
@@ -137,6 +137,8 @@ export default async function AccountPage({
           message: info?.returnRequestMessage ?? '',
           recipientName: info?.returnRequestRecipientName ?? '',
           phone: info?.returnRequestPhone ?? '',
+          courier: info?.returnCourier ?? '',
+          trackingNumber: info?.returnTrackingNumber ?? '',
         }}
         swatches={items.map((r) => ({ id: r.id, color1: r.inventory_item.product.color_1, color2: r.inventory_item.product.color_2 }))}
       />,

@@ -446,6 +446,8 @@ html{scroll-snap-type:y mandatory;scroll-padding-top:var(--scroll-offset, 154px)
 /* 기본 배송지 등록/즐겨찾기 추가 팝업의 취소/등록 버튼 — 별칭 입력란(.field)과 같은 크기로 축소 */
 .wd-btns-fit .cta{padding:9px 12px;font-size:13px}
 .wd-btns-fit .cta.ghost{padding:9px 12px}
+/* 반납접수요청 폼의 취소/저장 — 텍스트 크기에 맞춰 오른쪽 정렬(.cta-fit이 폭을 줄여줌) */
+.return-request-btns{justify-content:flex-end}
 
 /* ===== 관리자: 분쟁 배지 ===== */
 .order-dispute-badge{display:inline-block;margin-left:8px;font-size:10.5px;color:var(--wine);background:rgba(107,39,55,.12);padding:2px 8px;border-radius:99px;vertical-align:middle}

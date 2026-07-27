@@ -9,9 +9,7 @@ import { isValidDeliverySlot, isValidDeliveryMethod } from '@lala/shared/lib/del
 import { getClosedDates } from '@lala/shared/lib/closure-actions';
 import { billableDays } from '@lala/shared/lib/domain/reservation';
 import { sendPushToCustomer } from '@lala/shared/lib/push';
-
-// 배송(SHIPPED) 시작 전까지만 고객이 직접 취소·전액 환불할 수 있다.
-const CANCELLABLE_FULFILLMENT_STATUSES = ['ORDERED', 'PRE_INSPECTING', 'READY'];
+import { isCancellableStatus } from './order-status-labels';
 
 async function resolveCustomerId(): Promise<string | null> {
   const { data: { user } } = await (await supabaseServer()).auth.getUser();
@@ -125,7 +123,7 @@ export async function cancelOrder(orderId: string): Promise<{ ok: true } | { ok:
   if (!order) return { ok: false, reason: '주문을 찾을 수 없습니다.' };
   if (order.status !== 'PAID') return { ok: false, reason: '취소할 수 없는 주문이에요.' };
   if (order.disputed) return { ok: false, reason: '분쟁 처리 중인 주문은 취소할 수 없어요.' };
-  if (!CANCELLABLE_FULFILLMENT_STATUSES.includes(order.fulfillment_status)) {
+  if (!isCancellableStatus(order.fulfillment_status, order.delivery_method)) {
     return { ok: false, reason: '배송이 시작되어 더 이상 취소할 수 없어요.' };
   }
   if (!order.payment_key) return { ok: false, reason: '결제 정보를 확인할 수 없어요.' };

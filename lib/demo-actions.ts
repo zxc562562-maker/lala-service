@@ -102,6 +102,8 @@ export async function createDemoOrders(): Promise<
         return_request_message: '문 앞에 놔주세요',
         return_request_recipient_name: '홍길동',
         return_request_phone: '01000000000',
+        return_courier: 'CJ대한통운',
+        return_tracking_number: '123456789012',
       } : {}),
     });
     if (orderErr) { skipped.push(`${spec.label} (주문 생성 실패: ${orderErr.message})`); continue; }

@@ -15,13 +15,24 @@ const SHARED_LABEL: Record<string, string> = {
 const METHOD_LABEL: Record<string, Partial<Record<string, string>>> = {
   DIRECT: { SHIPPED: '배송중', DELIVERED: '배송 완료' },
   QUICK: { SHIPPED: '퀵 배송중' },
-  PARCEL: { SHIPPED: '택배 배송중', DELIVERED: '배송 완료', RETURN_REQUESTED: '반납접수 요청 완료' },
+  PARCEL: { READY: '택배사 전달중', SHIPPED: '택배 배송중', DELIVERED: '배송 완료', RETURN_REQUESTED: '반납 요청 완료' },
   PICKUP: { RETURN_REQUESTED: '반납 요청 완료' },
 };
 
 export function getOrderStatusLabel(fulfillmentStatus: string, deliveryMethod: string | null): string {
   const override = deliveryMethod ? METHOD_LABEL[deliveryMethod]?.[fulfillmentStatus] : undefined;
   return override ?? SHARED_LABEL[fulfillmentStatus] ?? fulfillmentStatus;
+}
+
+// 택배·퀵은 상품검수중까지만 취소 가능(그 다음 READY부터는 택배사에 이미 넘어가/픽업 기사가 이미
+// 배정돼 되돌릴 수 없음). 직배송·직접 픽업은 기존대로 배송 대기중까지 취소 가능.
+const STRICT_CANCEL_CUTOFF_METHODS = new Set(['PARCEL', 'QUICK']);
+
+export function isCancellableStatus(fulfillmentStatus: string, deliveryMethod: string | null): boolean {
+  const allowed = deliveryMethod && STRICT_CANCEL_CUTOFF_METHODS.has(deliveryMethod)
+    ? ['ORDERED', 'PRE_INSPECTING']
+    : ['ORDERED', 'PRE_INSPECTING', 'READY'];
+  return allowed.includes(fulfillmentStatus);
 }
 
 // 문제 발생 분기(레드 계열로 구분 표시) — 배송 방법과 무관하게 공통.

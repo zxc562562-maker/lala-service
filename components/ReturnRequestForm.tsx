@@ -14,6 +14,8 @@ export interface ReturnRequestFormInitial {
   message: string;
   recipientName: string;
   phone: string;
+  courier: string;
+  trackingNumber: string;
 }
 
 /**
@@ -114,6 +116,8 @@ export default function ReturnRequestForm({
         <>
           <div className="field-section" style={{ margin: 0 }}>반납 정보</div>
           <div className="return-request-view">
+            {initial.courier && <div className="row"><span>택배사</span><span>{initial.courier}</span></div>}
+            {initial.trackingNumber && <div className="row"><span>송장번호</span><span>{initial.trackingNumber}</span></div>}
             <div className="row"><span>반납 주소</span><span>{[initial.address, initial.detailAddress].filter(Boolean).join(' ') || '-'}</span></div>
             {initial.message && <div className="row"><span>반납 메시지</span><span>{initial.message}</span></div>}
             <div className="row"><span>이름</span><span>{initial.recipientName || '-'}</span></div>
@@ -172,11 +176,11 @@ export default function ReturnRequestForm({
           </div>
 
           {err && <div className="hint err" style={{ marginTop: 6 }}>{err}</div>}
-          <div className="wd-btns wd-btns-fit" style={{ marginTop: 10 }}>
+          <div className="wd-btns wd-btns-fit return-request-btns" style={{ marginTop: 10 }}>
             {mode === 'manage' && (
-              <button type="button" className="cta ghost return-request-ghost-btn" disabled={pending} onClick={cancelEdit}>취소</button>
+              <button type="button" className="cta ghost cta-fit return-request-ghost-btn" disabled={pending} onClick={cancelEdit}>취소</button>
             )}
-            <button type="button" className="cta" disabled={pending} onClick={save}>{pending ? '저장 중…' : '저장'}</button>
+            <button type="button" className="cta cta-fit" disabled={pending} onClick={save}>{pending ? '저장 중…' : '저장'}</button>
           </div>
         </>
       )}

@@ -50,7 +50,7 @@ export default function AccountOrderCard({
           <div className="resv-response-row">
             {response && <span className="resv-response">{response}</span>}
             {canRequestReturn && orderId && (
-              <button type="button" className="request-return-pill" onClick={toggleReturnPanel}>반납접수요청</button>
+              <button type="button" className="request-return-pill" onClick={toggleReturnPanel}>택배 반납 요청</button>
             )}
             {canManageReturnInfo && orderId && (
               <button type="button" className="return-info-pill" onClick={toggleReturnPanel}>반납 정보</button>
