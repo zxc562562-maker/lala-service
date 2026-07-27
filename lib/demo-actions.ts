@@ -17,25 +17,28 @@ interface DemoOrderSpec {
   withReturnRequest?: boolean;
 }
 
-// order-status-labels.ts의 모든 문구 variant + 문제 분기 + 분쟁 상태를 한 번씩 다 보여주도록 구성.
+// order-status-labels.ts의 모든 문구 variant + 문제 분기 + 분쟁 상태를 한 번씩 다 보여주면서,
+// 특히 직배송·직접 픽업 항목은 전부 delivery_slot을 채워 주문 상세 페이지의 배송방법+배송시간
+// 알약(직배송/직접 픽업만 시간 표시)을 다양한 상태에서 확인할 수 있게 구성.
 const DEMO_SPECS: DemoOrderSpec[] = [
   { label: '결제 완료 (직배송)', fulfillmentStatus: 'ORDERED', deliveryMethod: 'DIRECT', reservationStatus: 'ACTIVE', deliverySlot: '15' },
-  { label: '상품 검수중 (퀵배송)', fulfillmentStatus: 'PRE_INSPECTING', deliveryMethod: 'QUICK', reservationStatus: 'ACTIVE' },
+  { label: '상품 검수중 (직접 픽업)', fulfillmentStatus: 'PRE_INSPECTING', deliveryMethod: 'PICKUP', reservationStatus: 'ACTIVE', deliverySlot: '16' },
   { label: '배송 대기중 (택배)', fulfillmentStatus: 'READY', deliveryMethod: 'PARCEL', reservationStatus: 'ACTIVE' },
-  { label: '배송중 (직배송)', fulfillmentStatus: 'SHIPPED', deliveryMethod: 'DIRECT', reservationStatus: 'ACTIVE', deliverySlot: '16' },
+  { label: '배송중 (직배송)', fulfillmentStatus: 'SHIPPED', deliveryMethod: 'DIRECT', reservationStatus: 'ACTIVE', deliverySlot: '17' },
   { label: '퀵 배송중', fulfillmentStatus: 'SHIPPED', deliveryMethod: 'QUICK', reservationStatus: 'ACTIVE' },
   { label: '택배 배송중', fulfillmentStatus: 'SHIPPED', deliveryMethod: 'PARCEL', reservationStatus: 'ACTIVE' },
-  { label: '배송 완료 (직배송)', fulfillmentStatus: 'DELIVERED', deliveryMethod: 'DIRECT', reservationStatus: 'ACTIVE', deliverySlot: '17' },
+  { label: '배송 완료 (직배송)', fulfillmentStatus: 'DELIVERED', deliveryMethod: 'DIRECT', reservationStatus: 'ACTIVE', deliverySlot: '18' },
+  { label: '배송 완료 (직접 픽업)', fulfillmentStatus: 'DELIVERED', deliveryMethod: 'PICKUP', reservationStatus: 'ACTIVE', deliverySlot: '19' },
   { label: '배송 완료 (택배, 반납접수 가능)', fulfillmentStatus: 'DELIVERED', deliveryMethod: 'PARCEL', reservationStatus: 'ACTIVE' },
   { label: '반납접수 요청 완료 (택배)', fulfillmentStatus: 'RETURN_REQUESTED', deliveryMethod: 'PARCEL', reservationStatus: 'ACTIVE', withReturnRequest: true },
-  { label: '반납 요청 완료 (직접 픽업)', fulfillmentStatus: 'RETURN_REQUESTED', deliveryMethod: 'PICKUP', reservationStatus: 'ACTIVE' },
+  { label: '반납 요청 완료 (직접 픽업)', fulfillmentStatus: 'RETURN_REQUESTED', deliveryMethod: 'PICKUP', reservationStatus: 'ACTIVE', deliverySlot: '20' },
   { label: '반납 검수중', fulfillmentStatus: 'RETURN_INSPECTING', deliveryMethod: 'PARCEL', reservationStatus: 'ACTIVE' },
   { label: '반납 완료', fulfillmentStatus: 'REFUNDED', deliveryMethod: 'PARCEL', reservationStatus: 'COMPLETED' },
   { label: '보증금 환불 완료', fulfillmentStatus: 'DEPOSIT_REFUNDED', deliveryMethod: 'PARCEL', reservationStatus: 'COMPLETED' },
-  { label: '상품검수중 오염·손상 확인', fulfillmentStatus: 'PRE_INSPECT_ISSUE', deliveryMethod: 'DIRECT', reservationStatus: 'ACTIVE' },
+  { label: '상품검수중 오염·손상 확인', fulfillmentStatus: 'PRE_INSPECT_ISSUE', deliveryMethod: 'DIRECT', reservationStatus: 'ACTIVE', deliverySlot: '15' },
   { label: '오배송', fulfillmentStatus: 'MISDELIVERED', deliveryMethod: 'QUICK', reservationStatus: 'ACTIVE' },
   { label: '반납 검수중 오염·손상 확인', fulfillmentStatus: 'RETURN_ISSUE', deliveryMethod: 'PARCEL', reservationStatus: 'ACTIVE' },
-  { label: '주문 취소', fulfillmentStatus: 'CANCELLED', deliveryMethod: 'DIRECT', reservationStatus: 'CANCELLED' },
+  { label: '주문 취소', fulfillmentStatus: 'CANCELLED', deliveryMethod: 'DIRECT', reservationStatus: 'CANCELLED', deliverySlot: '16' },
   { label: '분쟁중 (택배)', fulfillmentStatus: 'SHIPPED', deliveryMethod: 'PARCEL', reservationStatus: 'ACTIVE', disputed: true, disputeReason: '분쟁 접수 예시' },
 ];
 
@@ -52,9 +55,9 @@ export async function createDemoOrders(): Promise<
   const { data: customer } = await sb.from('customer').select('id').eq('auth_user_id', user.id).maybeSingle();
   if (!customer) return { ok: false, reason: '고객 정보를 찾을 수 없습니다.' };
 
-  // 반복 실행해도 목록이 계속 불어나지 않도록, 그리고 이전 데모가 붙잡고 있던 재고가 다시
-  // 풀리도록, 매번 시작할 때 이전에 만든 데모 주문(id가 demo_로 시작)을 먼저 정리한다.
-  const { data: oldOrders } = await sb.from('payment_order').select('id').like('id', 'demo_%');
+  // 매번 이 계정의 주문 목록을 깨끗한 상태에서 다시 보여주기 위해(데모든 실제 테스트 결제든),
+  // 시작할 때 이 고객의 기존 주문을 전부 지운다 — 재고도 그만큼 다시 풀린다.
+  const { data: oldOrders } = await sb.from('payment_order').select('id').eq('customer_id', customer.id);
   const oldIds = (oldOrders ?? []).map((o: { id: string }) => o.id);
   if (oldIds.length > 0) {
     await sb.from('reservation').delete().in('payment_order_id', oldIds);

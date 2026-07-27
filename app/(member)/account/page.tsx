@@ -6,7 +6,6 @@ import { getCachedUser } from '@lala/shared/lib/auth-cache';
 import AccountDateFilter from '@/components/AccountDateFilter';
 import AccountOrderCard from '@/components/AccountOrderCard';
 import DemoOrderButton from '@/components/DemoOrderButton';
-import { DELIVERY_METHODS } from '@lala/shared/lib/delivery';
 import { getOrderStatusLabel, PROBLEM_LABEL, RESPONSE_LABEL } from '@/lib/order-status-labels';
 
 export const dynamic = 'force-dynamic';
@@ -112,9 +111,6 @@ export default async function AccountPage({
     const response = info ? RESPONSE_LABEL[info.fulfillmentStatus] : undefined;
     const isCancellable = !!info && info.status === 'PAID' && !info.disputed
       && CANCELLABLE_FULFILLMENT_STATUSES.includes(info.fulfillmentStatus);
-    const deliveryMethodLabel = info?.deliveryMethod
-      ? DELIVERY_METHODS.find((m) => m.id === info.deliveryMethod)?.label
-      : undefined;
     // 택배는 기사가 수거하지 않아 고객이 직접 반납 발송을 알려야 함 — 배송완료 상태에서만 노출.
     const canRequestReturn = !!info && info.deliveryMethod === 'PARCEL' && info.status === 'PAID' && !info.disputed
       && info.fulfillmentStatus === 'DELIVERED';
@@ -132,7 +128,6 @@ export default async function AccountPage({
         isProblem={isProblem}
         response={response}
         isCancellable={isCancellable}
-        deliveryMethodLabel={deliveryMethodLabel}
         canRequestReturn={canRequestReturn}
         canManageReturnInfo={canManageReturnInfo}
         returnRequestInitial={{

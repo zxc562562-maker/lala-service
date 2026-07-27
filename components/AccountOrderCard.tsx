@@ -13,7 +13,6 @@ export interface AccountOrderCardProps {
   isProblem: boolean;
   response?: string;
   isCancellable: boolean;
-  deliveryMethodLabel?: string;
   canRequestReturn: boolean;
   canManageReturnInfo: boolean;
   returnRequestInitial: ReturnRequestFormInitial;
@@ -22,7 +21,7 @@ export interface AccountOrderCardProps {
 
 export default function AccountOrderCard({
   orderId, checkoutDate, returnDate, label, isProblem, response, isCancellable,
-  deliveryMethodLabel, canRequestReturn, canManageReturnInfo, returnRequestInitial, swatches,
+  canRequestReturn, canManageReturnInfo, returnRequestInitial, swatches,
 }: AccountOrderCardProps) {
   const [returnPanelOpen, setReturnPanelOpen] = useState(false);
   const [returnEditing, setReturnEditing] = useState(false);
@@ -39,7 +38,6 @@ export default function AccountOrderCard({
       <div className="resv-group-date">
         <span className="resv-group-date-left">{checkoutDate} – {returnDate}</span>
         <span className="resv-status-group">
-          {deliveryMethodLabel && <span className="delivery-method-pill">{deliveryMethodLabel}</span>}
           <span className={`resv-status ${isProblem ? 'resv-problem' : ''}`}>{label}</span>
           {isCancellable && orderId && <CancelOrderButton orderId={orderId} />}
         </span>
