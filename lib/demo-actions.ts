@@ -64,13 +64,15 @@ export async function createDemoOrders(): Promise<
     await sb.from('payment_order').delete().in('id', oldIds);
   }
 
-  // 실제 존재하는 재고 아이템을 그대로 빌려 쓰되(가짜 상품을 새로 안 만듦), 이미 ACTIVE 예약이
-  // 걸려있는 아이템을 고르면 DB의 no_double_booking 배타 제약에 걸려 실패하므로, ACTIVE 예약이
-  // 하나도 없는 아이템만 후보로 삼고, 데모 항목마다 서로 다른 아이템을 하나씩 배정한다.
+  // 실제 존재하는 재고 아이템을 그대로 빌려 쓰되(가짜 상품을 새로 안 만듦), no_double_booking
+  // 배타 제약은 reservation.status='ACTIVE'끼리만 걸리므로, ACTIVE로 만들 항목만 "안 겹치는"
+  // 아이템이 필요하다. COMPLETED/CANCELLED로 만들 항목(반납완료·환불완료·취소)은 그 제약과 무관해
+  // 아무 아이템이나 재사용해도 안전 — 안 그러면 몇 안 되는 여유 재고를 불필요하게 낭비하게 된다.
   const { data: busyRows } = await sb.from('reservation').select('item_id').eq('status', 'ACTIVE');
   const busyItemIds = new Set((busyRows ?? []).map((r: { item_id: string }) => r.item_id));
   const { data: candidates } = await sb.from('inventory_item').select('id,product:product_id(id,name,daily_price)').limit(200);
-  const freeItems = (candidates ?? []).filter((c) => !busyItemIds.has(c.id));
+  const freeQueue = (candidates ?? []).filter((c) => !busyItemIds.has(c.id));
+  const anyItem = (candidates ?? [])[0];
 
   const today = toDate(todayISO());
   const checkout = iso(addDays(today, -5));
@@ -82,7 +84,7 @@ export async function createDemoOrders(): Promise<
 
   for (let i = 0; i < DEMO_SPECS.length; i++) {
     const spec = DEMO_SPECS[i];
-    const item = freeItems[i];
+    const item = spec.reservationStatus === 'ACTIVE' ? freeQueue.shift() : anyItem;
     if (!item) { skipped.push(`${spec.label} (재고 부족)`); continue; }
     const product = item.product as unknown as { id: string; name: string; daily_price: number };
     const amount = product.daily_price * days + 50000; // 렌탈비 + 보증금(데모용 대략값)
